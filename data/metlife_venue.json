@@ -1,0 +1,88 @@
+{
+  "venue": "MetLife Stadium",
+  "location": "East Rutherford, NJ",
+  "notes": "Hand-authored simplified graph for EchoStand hackathon. Coordinates are approximate (WGS84). Level: 100 = lower bowl, 200 = mezzanine, 300 = upper bowl, 0 = exterior/plaza, 400 = concourse-only.",
+  "nodes": [
+    {"id": "gate_a", "name": "Gate A", "type": "gate", "lat": 40.8135, "lng": -74.0745, "level": 0, "capacity": 15000, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"quadrant": "NW"}},
+    {"id": "gate_b", "name": "Gate B", "type": "gate", "lat": 40.8145, "lng": -74.0735, "level": 0, "capacity": 12000, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"quadrant": "N"}},
+    {"id": "gate_c", "name": "Gate C", "type": "gate", "lat": 40.8135, "lng": -74.0722, "level": 0, "capacity": 15000, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"quadrant": "NE"}},
+    {"id": "gate_d", "name": "Gate D", "type": "gate", "lat": 40.8118, "lng": -74.0720, "level": 0, "capacity": 12000, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"quadrant": "SE"}},
+    {"id": "gate_e", "name": "Gate E", "type": "gate", "lat": 40.8110, "lng": -74.0735, "level": 0, "capacity": 15000, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"quadrant": "S"}},
+    {"id": "gate_f", "name": "Gate F", "type": "gate", "lat": 40.8117, "lng": -74.0748, "level": 0, "capacity": 12000, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"quadrant": "SW"}},
+
+    {"id": "plaza_n", "name": "North Plaza", "type": "landmark", "lat": 40.8148, "lng": -74.0733, "level": 0, "step_free": true, "low_stimulus": true, "is_open": true, "metadata": {"has_fanfest": true}},
+    {"id": "plaza_s", "name": "South Plaza (Toyota Gate)", "type": "landmark", "lat": 40.8105, "lng": -74.0733, "level": 0, "step_free": true, "low_stimulus": true, "is_open": true, "metadata": {"has_fanfest": true}},
+
+    {"id": "concourse_100_n", "name": "Main Concourse North (100)", "type": "concourse", "lat": 40.8138, "lng": -74.0733, "level": 100, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {}},
+    {"id": "concourse_100_s", "name": "Main Concourse South (100)", "type": "concourse", "lat": 40.8115, "lng": -74.0733, "level": 100, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {}},
+    {"id": "concourse_200", "name": "Mezzanine Concourse (200)", "type": "concourse", "lat": 40.8127, "lng": -74.0733, "level": 200, "step_free": true, "low_stimulus": true, "is_open": true, "metadata": {}},
+    {"id": "concourse_300", "name": "Upper Concourse (300)", "type": "concourse", "lat": 40.8127, "lng": -74.0733, "level": 300, "step_free": false, "low_stimulus": false, "is_open": true, "metadata": {"note": "Only accessible via ramps at NE/SW"}},
+
+    {"id": "section_112", "name": "Section 112", "type": "section", "lat": 40.8140, "lng": -74.0730, "level": 100, "capacity": 350, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {}},
+    {"id": "section_119", "name": "Section 119", "type": "section", "lat": 40.8115, "lng": -74.0729, "level": 100, "capacity": 350, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {}},
+    {"id": "section_212", "name": "Section 212", "type": "section", "lat": 40.8138, "lng": -74.0729, "level": 200, "capacity": 280, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {}},
+    {"id": "section_324", "name": "Section 324", "type": "section", "lat": 40.8118, "lng": -74.0742, "level": 300, "capacity": 300, "step_free": false, "low_stimulus": false, "is_open": true, "metadata": {}},
+
+    {"id": "restroom_112", "name": "Restroom near 112", "type": "restroom", "lat": 40.8139, "lng": -74.0731, "level": 100, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"family": true}},
+    {"id": "restroom_119", "name": "Restroom near 119", "type": "restroom", "lat": 40.8116, "lng": -74.0730, "level": 100, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"family": true}},
+    {"id": "restroom_200", "name": "Restroom Mezzanine East", "type": "restroom", "lat": 40.8127, "lng": -74.0725, "level": 200, "step_free": true, "low_stimulus": true, "is_open": true, "metadata": {}},
+
+    {"id": "vendor_e_100", "name": "Concessions East 100", "type": "vendor", "lat": 40.8127, "lng": -74.0722, "level": 100, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {}},
+    {"id": "vendor_w_100", "name": "Concessions West 100", "type": "vendor", "lat": 40.8127, "lng": -74.0744, "level": 100, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {}},
+
+    {"id": "medical_n", "name": "Medical Station North", "type": "medical", "lat": 40.8142, "lng": -74.0735, "level": 100, "step_free": true, "low_stimulus": true, "is_open": true, "metadata": {"aed": true, "staff_247": true}},
+    {"id": "medical_s", "name": "Medical Station South", "type": "medical", "lat": 40.8112, "lng": -74.0735, "level": 100, "step_free": true, "low_stimulus": true, "is_open": true, "metadata": {"aed": true, "staff_247": true}},
+
+    {"id": "quiet_room", "name": "Sensory Quiet Room (Mezzanine NE)", "type": "landmark", "lat": 40.8133, "lng": -74.0724, "level": 200, "step_free": true, "low_stimulus": true, "is_open": true, "metadata": {"purpose": "sensory retreat"}},
+
+    {"id": "exit_ne", "name": "Emergency Exit NE", "type": "exit", "lat": 40.8143, "lng": -74.0720, "level": 100, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {}},
+    {"id": "exit_sw", "name": "Emergency Exit SW", "type": "exit", "lat": 40.8112, "lng": -74.0748, "level": 100, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {}},
+
+    {"id": "transit_secaucus", "name": "Secaucus Junction Shuttle Stop", "type": "transit", "lat": 40.8155, "lng": -74.0708, "level": 0, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"mode": "NJT rail shuttle"}},
+    {"id": "parking_a", "name": "Parking Lot A", "type": "transit", "lat": 40.8155, "lng": -74.0760, "level": 0, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"mode": "parking"}},
+
+    {"id": "ramp_ne", "name": "Ramp NE (100→300)", "type": "landmark", "lat": 40.8140, "lng": -74.0723, "level": 100, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"connects_levels": [100, 200, 300]}},
+    {"id": "ramp_sw", "name": "Ramp SW (100→300)", "type": "landmark", "lat": 40.8114, "lng": -74.0746, "level": 100, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"connects_levels": [100, 200, 300]}}
+  ],
+  "edges": [
+    {"from": "gate_a", "to": "plaza_n", "distance_m": 40, "step_free": true, "width_m": 6.0, "low_stimulus": true},
+    {"from": "gate_b", "to": "plaza_n", "distance_m": 25, "step_free": true, "width_m": 6.0, "low_stimulus": true},
+    {"from": "gate_c", "to": "plaza_n", "distance_m": 45, "step_free": true, "width_m": 6.0, "low_stimulus": true},
+    {"from": "gate_d", "to": "plaza_s", "distance_m": 45, "step_free": true, "width_m": 6.0, "low_stimulus": true},
+    {"from": "gate_e", "to": "plaza_s", "distance_m": 25, "step_free": true, "width_m": 6.0, "low_stimulus": true},
+    {"from": "gate_f", "to": "plaza_s", "distance_m": 45, "step_free": true, "width_m": 6.0, "low_stimulus": true},
+
+    {"from": "plaza_n", "to": "concourse_100_n", "distance_m": 40, "step_free": true, "width_m": 5.0, "low_stimulus": false},
+    {"from": "plaza_s", "to": "concourse_100_s", "distance_m": 40, "step_free": true, "width_m": 5.0, "low_stimulus": false},
+
+    {"from": "concourse_100_n", "to": "concourse_100_s", "distance_m": 220, "step_free": true, "width_m": 6.0, "low_stimulus": false},
+    {"from": "concourse_100_n", "to": "section_112", "distance_m": 30, "step_free": true, "width_m": 3.0, "low_stimulus": false},
+    {"from": "concourse_100_s", "to": "section_119", "distance_m": 30, "step_free": true, "width_m": 3.0, "low_stimulus": false},
+    {"from": "concourse_100_n", "to": "restroom_112", "distance_m": 25, "step_free": true, "width_m": 3.0, "low_stimulus": false},
+    {"from": "concourse_100_s", "to": "restroom_119", "distance_m": 25, "step_free": true, "width_m": 3.0, "low_stimulus": false},
+    {"from": "concourse_100_n", "to": "vendor_w_100", "distance_m": 40, "step_free": true, "width_m": 4.0, "low_stimulus": false},
+    {"from": "concourse_100_n", "to": "vendor_e_100", "distance_m": 40, "step_free": true, "width_m": 4.0, "low_stimulus": false},
+    {"from": "concourse_100_n", "to": "medical_n", "distance_m": 30, "step_free": true, "width_m": 3.0, "low_stimulus": true},
+    {"from": "concourse_100_s", "to": "medical_s", "distance_m": 30, "step_free": true, "width_m": 3.0, "low_stimulus": true},
+
+    {"from": "concourse_100_n", "to": "ramp_ne", "distance_m": 20, "step_free": true, "width_m": 3.0, "low_stimulus": false},
+    {"from": "concourse_100_s", "to": "ramp_sw", "distance_m": 20, "step_free": true, "width_m": 3.0, "low_stimulus": false},
+
+    {"from": "ramp_ne", "to": "concourse_200", "distance_m": 25, "step_free": true, "width_m": 3.0, "low_stimulus": false},
+    {"from": "ramp_sw", "to": "concourse_200", "distance_m": 25, "step_free": true, "width_m": 3.0, "low_stimulus": false},
+    {"from": "ramp_ne", "to": "concourse_300", "distance_m": 50, "step_free": true, "width_m": 3.0, "low_stimulus": false},
+    {"from": "ramp_sw", "to": "concourse_300", "distance_m": 50, "step_free": true, "width_m": 3.0, "low_stimulus": false},
+
+    {"from": "concourse_200", "to": "restroom_200", "distance_m": 25, "step_free": true, "width_m": 3.0, "low_stimulus": true},
+    {"from": "concourse_200", "to": "section_212", "distance_m": 20, "step_free": true, "width_m": 3.0, "low_stimulus": false},
+    {"from": "concourse_200", "to": "quiet_room", "distance_m": 35, "step_free": true, "width_m": 3.0, "low_stimulus": true},
+
+    {"from": "concourse_300", "to": "section_324", "distance_m": 30, "step_free": false, "width_m": 2.0, "low_stimulus": false},
+
+    {"from": "concourse_100_n", "to": "exit_ne", "distance_m": 40, "step_free": true, "width_m": 4.0, "low_stimulus": false},
+    {"from": "concourse_100_s", "to": "exit_sw", "distance_m": 40, "step_free": true, "width_m": 4.0, "low_stimulus": false},
+
+    {"from": "plaza_n", "to": "transit_secaucus", "distance_m": 150, "step_free": true, "width_m": 5.0, "low_stimulus": false},
+    {"from": "plaza_n", "to": "parking_a", "distance_m": 180, "step_free": true, "width_m": 5.0, "low_stimulus": false}
+  ]
+}

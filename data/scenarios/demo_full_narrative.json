@@ -1,0 +1,104 @@
+{
+  "name": "demo_full_narrative",
+  "description": "PRD §3.10 beats 1–6: spill near section 112 escalates Rumor → Probable → Confirmed, staff dispatched, fans nudged in their languages, wheelchair fan gets step-free reroute, then a safety-critical medical asymmetry beat, then resolution and loop-closure.",
+  "steps": [
+    {
+      "delay_ms": 0,
+      "kind": "fan_report",
+      "payload": {
+        "persona": "fan_es_1",
+        "language": "es",
+        "category": "spill",
+        "node_id": "section_112",
+        "text": "Hay un derrame grande cerca del baño de la 112, huele mal"
+      }
+    },
+    {
+      "delay_ms": 3500,
+      "kind": "fan_report",
+      "payload": {
+        "persona": "fan_en_1",
+        "language": "en",
+        "category": "spill",
+        "node_id": "restroom_112",
+        "text": "toilet area near 112 looks flooded, sticky floor"
+      }
+    },
+    {
+      "delay_ms": 6000,
+      "kind": "fan_report",
+      "payload": {
+        "persona": "fan_ko_1",
+        "language": "ko",
+        "category": "smell",
+        "node_id": "section_112",
+        "text": "112 근처 화장실 냄새가 아주 심해요"
+      }
+    },
+    {
+      "delay_ms": 8000,
+      "kind": "passive_signal",
+      "payload": {
+        "kind": "density",
+        "node_id": "restroom_112",
+        "value": 3.8,
+        "metadata": {"note": "density spike consistent with people avoiding the area"}
+      }
+    },
+    {
+      "delay_ms": 10000,
+      "kind": "fan_report",
+      "payload": {
+        "persona": "fan_pt_1",
+        "language": "pt",
+        "category": "spill",
+        "node_id": "restroom_112",
+        "text": "banheiro alagado, evitem",
+        "media_ids": ["sim_photo_spill.jpg"]
+      }
+    },
+    {
+      "delay_ms": 13000,
+      "kind": "volunteer_confirm",
+      "payload": {
+        "username": "vol_north",
+        "node_id": "restroom_112",
+        "category": "spill",
+        "text": "confirmed — 2m² spill outside restroom 112, cordoning off"
+      }
+    },
+    {
+      "delay_ms": 18000,
+      "kind": "fan_report",
+      "payload": {
+        "persona": "fan_ar_wc",
+        "username": "fan_jamil",
+        "language": "ar",
+        "category": "wayfinding",
+        "node_id": "section_112",
+        "text": "أحتاج طريقاً بديلاً للحمام، أنا في كرسي متحرك"
+      }
+    },
+    {
+      "delay_ms": 25000,
+      "kind": "fan_report",
+      "payload": {
+        "persona": "fan_medical_witness",
+        "language": "en",
+        "category": "medical",
+        "node_id": "section_324",
+        "text": "someone in 324 is on the floor, not moving. only i can see it from here"
+      }
+    },
+    {
+      "delay_ms": 40000,
+      "kind": "staff_report",
+      "payload": {
+        "username": "staff_ops",
+        "category": "spill",
+        "node_id": "restroom_112",
+        "text": "janitorial complete, floor dry, area reopened — resolving"
+      }
+    }
+  ]
+}

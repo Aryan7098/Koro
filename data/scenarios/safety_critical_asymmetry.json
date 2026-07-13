@@ -1,0 +1,17 @@
+{
+  "name": "safety_critical_asymmetry",
+  "description": "Proves the §2.4 asymmetry: a single anonymous medical flag with RUMOR-level corroboration still surfaces to the staff Authorize queue within one fusion tick, because under-reacting to a possible medical event is the worse error.",
+  "steps": [
+    {
+      "delay_ms": 0,
+      "kind": "fan_report",
+      "payload": {
+        "persona": "anon_witness",
+        "language": "en",
+        "category": "medical",
+        "node_id": "section_119",
+        "text": "person in 119 collapsed, please help"
+      }
+    }
+  ]
+}

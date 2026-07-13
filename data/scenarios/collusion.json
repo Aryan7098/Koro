@@ -1,0 +1,16 @@
+{
+  "name": "collusion",
+  "description": "Proves independence counting suppresses coordinated fakery — 40 reports about a fake 'Gate C closed' claim, but only from 3 distinct personas (device fingerprints). The event should never leave RUMOR band because (a) independence counts distinct observers with log1p weighting, and (b) T0 anonymous clusters hard-cap at PROBABLE. Add: the gate_c throughput sensor stays healthy, which contradicts the claim and drops plausibility.",
+  "steps": [
+    {"delay_ms": 0,     "kind": "fan_report", "payload": {"persona": "bot_a", "language": "en", "category": "gate", "node_id": "gate_c", "text": "gate c is closed"}},
+    {"delay_ms": 300,   "kind": "fan_report", "payload": {"persona": "bot_a", "language": "en", "category": "gate", "node_id": "gate_c", "text": "gate c closed"}},
+    {"delay_ms": 600,   "kind": "fan_report", "payload": {"persona": "bot_a", "language": "en", "category": "gate", "node_id": "gate_c", "text": "GATE C CLOSED"}},
+    {"delay_ms": 900,   "kind": "fan_report", "payload": {"persona": "bot_a", "language": "en", "category": "gate", "node_id": "gate_c", "text": "gate c closed pls redirect"}},
+    {"delay_ms": 1200,  "kind": "fan_report", "payload": {"persona": "bot_b", "language": "en", "category": "gate", "node_id": "gate_c", "text": "gate c closed"}},
+    {"delay_ms": 1500,  "kind": "fan_report", "payload": {"persona": "bot_b", "language": "en", "category": "gate", "node_id": "gate_c", "text": "gate c closed"}},
+    {"delay_ms": 1800,  "kind": "fan_report", "payload": {"persona": "bot_b", "language": "en", "category": "gate", "node_id": "gate_c", "text": "gate c closed"}},
+    {"delay_ms": 2100,  "kind": "fan_report", "payload": {"persona": "bot_c", "language": "en", "category": "gate", "node_id": "gate_c", "text": "gate c closed"}},
+    {"delay_ms": 2400,  "kind": "fan_report", "payload": {"persona": "bot_c", "language": "en", "category": "gate", "node_id": "gate_c", "text": "gate c closed!!!"}},
+    {"delay_ms": 2700,  "kind": "passive_signal", "payload": {"kind": "throughput", "node_id": "gate_c", "value": 480, "metadata": {"note": "gate scanners still reading ~480 people/min through gate_c — contradicts the claim"}}}
+  ]
+}

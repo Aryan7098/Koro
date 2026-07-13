@@ -1,0 +1,53 @@
+[project]
+name = "echostand-api"
+version = "0.1.0"
+description = "EchoStand API — real-time crowd-sourced ground-truth fusion for FIFA 2026 venues"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "sqlalchemy[asyncio]>=2.0.35",
+    "asyncpg>=0.30",
+    "psycopg2-binary>=2.9",
+    "alembic>=1.13",
+    "pgvector>=0.3",
+    "redis>=5.2",
+    "arq>=0.26",
+    "anthropic>=0.40",
+    "sentence-transformers>=3.3",
+    "torch>=2.5",
+    "python-jose[cryptography]>=3.3",
+    "passlib[bcrypt]>=1.7",
+    "python-multipart>=0.0.17",
+    "minio>=7.2",
+    "httpx>=0.27",
+    "sse-starlette>=2.1",
+    "orjson>=3.10",
+    "numpy>=1.26",
+    "openai>=1.55",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.7",
+    "mypy>=1.13",
+    "httpx>=0.27",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

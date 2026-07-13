@@ -1,0 +1,14 @@
+{
+  "categories": [
+    {"id": "spill", "label": {"en": "Spill / mess", "es": "Derrame", "fr": "Renversement", "ar": "انسكاب", "pt": "Derramamento", "ko": "쏟아짐"}, "severity_bias": "LOW"},
+    {"id": "restroom", "label": {"en": "Restroom issue", "es": "Baño", "fr": "Toilettes", "ar": "دورة المياه", "pt": "Banheiro", "ko": "화장실"}, "severity_bias": "LOW"},
+    {"id": "vendor", "label": {"en": "Long line / vendor", "es": "Cola larga", "fr": "File d'attente", "ar": "طابور طويل", "pt": "Fila longa", "ko": "긴 줄"}, "severity_bias": "LOW"},
+    {"id": "gate", "label": {"en": "Gate delay", "es": "Retraso en la puerta", "fr": "Retard à la porte", "ar": "تأخير عند البوابة", "pt": "Atraso no portão", "ko": "게이트 지연"}, "severity_bias": "MED"},
+    {"id": "wayfinding", "label": {"en": "Can't find something", "es": "No encuentro algo", "fr": "Je ne trouve pas", "ar": "لا أجد", "pt": "Não encontro", "ko": "찾을 수 없음"}, "severity_bias": "LOW"},
+    {"id": "smell", "label": {"en": "Bad smell", "es": "Mal olor", "fr": "Mauvaise odeur", "ar": "رائحة سيئة", "pt": "Mau cheiro", "ko": "악취"}, "severity_bias": "LOW"},
+    {"id": "crowd", "label": {"en": "Crowded / crush", "es": "Aglomeración", "fr": "Foule dense", "ar": "ازدحام", "pt": "Multidão", "ko": "혼잡"}, "severity_bias": "MED"},
+    {"id": "medical", "label": {"en": "Medical", "es": "Médico", "fr": "Médical", "ar": "طبي", "pt": "Médico", "ko": "의료"}, "severity_bias": "CRITICAL", "safety_critical": true},
+    {"id": "security", "label": {"en": "Security concern", "es": "Seguridad", "fr": "Sécurité", "ar": "أمن", "pt": "Segurança", "ko": "보안"}, "severity_bias": "HIGH", "safety_critical": true},
+    {"id": "structural", "label": {"en": "Fire / structural", "es": "Fuego / estructural", "fr": "Incendie / structurel", "ar": "حريق / إنشائي", "pt": "Fogo / estrutural", "ko": "화재 / 구조"}, "severity_bias": "CRITICAL", "safety_critical": true}
+  ]
+}
