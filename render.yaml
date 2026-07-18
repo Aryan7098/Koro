@@ -15,6 +15,8 @@ services:
       # Non-secret, checked-in values
       - key: PORT
         value: "8000"
+      - key: LLM_PROVIDER
+        value: gemini
       - key: EMBEDDING_BACKEND
         value: cohere
       - key: FUSION_TICK_SECONDS
@@ -23,8 +25,8 @@ services:
         value: none
       - key: COOKIE_SECURE
         value: "true"
-      # Secrets — Render prompts for these in the dashboard
-      - key: ANTHROPIC_API_KEY
+      # Secrets — Render prompts for these in the dashboard.
+      - key: GEMINI_API_KEY
         sync: false
       - key: COHERE_API_KEY
         sync: false

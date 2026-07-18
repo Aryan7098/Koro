@@ -9,7 +9,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    # LLM provider: "anthropic" or "gemini". Gemini is the free-tier default.
+    llm_provider: str = "gemini"
+
     anthropic_api_key: str = ""
+    gemini_api_key: str = ""
+
+    # Gemini model names (only used when llm_provider=gemini).
+    gemini_model_fast: str = "gemini-2.5-flash"
+    gemini_model_reason: str = "gemini-2.5-flash"
 
     database_url: str = "postgresql+asyncpg://echostand:echostand@localhost:5433/echostand"
     database_url_sync: str = "postgresql://echostand:echostand@localhost:5433/echostand"

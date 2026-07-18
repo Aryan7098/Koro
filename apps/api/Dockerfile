@@ -27,7 +27,7 @@ RUN pip install --upgrade pip \
         "pydantic-settings>=2.6" "sqlalchemy[asyncio]>=2.0.35" \
         "asyncpg>=0.30" "psycopg2-binary>=2.9" "alembic>=1.13" \
         "pgvector>=0.3" "redis>=5.2" "arq>=0.26" "anthropic>=0.40" \
-        "cohere>=5.11" "python-jose[cryptography]>=3.3" \
+        "cohere>=5.11" "google-genai>=0.8" "python-jose[cryptography]>=3.3" \
         "passlib[bcrypt]>=1.7" "python-multipart>=0.0.17" \
         "minio>=7.2" "httpx>=0.27" "sse-starlette>=2.1" \
         "orjson>=3.10" "numpy>=1.26"
