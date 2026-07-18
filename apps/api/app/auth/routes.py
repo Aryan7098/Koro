@@ -104,3 +104,38 @@ async def me(user: Annotated[User, Depends(current_user)]) -> dict:
         "zone": user.zone,
         "category_ownership": user.category_ownership,
     }
+
+
+class ProfilePatch(BaseModel):
+    language: str | None = None
+    home_node_id: str | None = None
+    accessibility_profile: dict | None = None
+
+
+@router.patch("/me")
+async def patch_me(
+    body: ProfilePatch,
+    user: Annotated[User, Depends(current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> dict:
+    """Let fans toggle their language / home node / accessibility profile from the UI.
+
+    Every field is optional; unspecified fields stay put.
+    """
+    if body.language is not None:
+        user.language = body.language
+    if body.home_node_id is not None:
+        user.home_node_id = body.home_node_id or None
+    if body.accessibility_profile is not None:
+        # Only persist the known keys — silently drop anything else
+        user.accessibility_profile = {
+            "mobility": bool(body.accessibility_profile.get("mobility", False)),
+            "sensory": bool(body.accessibility_profile.get("sensory", False)),
+        }
+    await session.commit()
+    return {
+        "id": str(user.id),
+        "language": user.language,
+        "home_node_id": user.home_node_id,
+        "accessibility_profile": user.accessibility_profile,
+    }

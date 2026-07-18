@@ -118,36 +118,57 @@ async def dispatch_render(
 
 
 async def _render_fan(session: AsyncSession, ctx, event: CanonicalEvent) -> None:
-    fans = await _subscribed_fan_users(session)
+    """Render fan nudges — batched by accessibility profile.
 
-    # Group fans by language + accessibility profile so we don't have to
-    # re-call the LLM per fan when a batch shares the same profile.
+    Each unique accessibility profile is a separate Sonnet call requesting
+    every language present in that group. Cuts the per-event LLM call count
+    from N (fans) down to K (distinct profiles), typically 2-3.
+    """
+    fans = await _subscribed_fan_users(session)
+    if not fans:
+        return
+
+    # Group by (mobility, sensory) — the only two flags we currently render for
+    groups: dict[tuple[bool, bool], list] = {}
     for fan in fans:
+        key = (
+            bool((fan.accessibility_profile or {}).get("mobility")),
+            bool((fan.accessibility_profile or {}).get("sensory")),
+        )
+        groups.setdefault(key, []).append(fan)
+
+    for (mobility, sensory), members in groups.items():
+        langs = sorted({(f.language or "en") for f in members})
         result = await fan_render.render_fan_nudge(
             ctx=ctx,
             event_summary=event.canonical_summary or "",
             band=event.confidence_band,
             severity=event.severity,
             source_mix=event.source_mix or {},
-            languages=[fan.language or "en"],
-            accessibility=fan.accessibility_profile or {},
+            languages=langs,
+            accessibility={"mobility": mobility, "sensory": sensory},
         )
         if not result:
             continue
-        nudge = result.get("nudges", {}).get(fan.language or "en")
-        if not nudge:
-            continue
-        payload = {
-            "event_id": str(event.id),
-            "category": event.category,
-            "severity": event.severity,
-            "band": event.confidence_band,
-            "node_id": event.node_id,
-            "lang": fan.language,
-            **nudge,
-        }
-        bus.publish("fan", str(fan.id), "fan.nudge", payload)
-        _log_render(session, event, f"fan:{fan.username}", payload)
+        nudges = result.get("nudges", {}) or {}
+        for fan in members:
+            nudge = nudges.get(fan.language or "en")
+            if not nudge:
+                # Fallback to English if this lang missing from the response
+                nudge = nudges.get("en")
+            if not nudge:
+                continue
+            payload = {
+                "event_id": str(event.id),
+                "category": event.category,
+                "severity": event.severity,
+                "band": event.confidence_band,
+                "node_id": event.node_id,
+                "lang": fan.language,
+                **nudge,
+            }
+            bus.publish("fan", str(fan.id), "fan.nudge", payload)
+            _log_render(session, event, f"fan:{fan.username}", payload)
 
 
 async def _render_staff(
