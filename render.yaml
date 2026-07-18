@@ -1,0 +1,40 @@
+# Render.com blueprint for EchoStand.
+# Web service builds from apps/api/Dockerfile with repo root as build context.
+# All secret env vars are set via Render dashboard AFTER the service is created
+# (sync: false → Render prompts you for the value on first deploy).
+services:
+  - type: web
+    name: echostand-api
+    runtime: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .          # repo root, so Dockerfile can COPY data/ and packages/
+    plan: free
+    region: singapore
+    healthCheckPath: /health
+    envVars:
+      # Non-secret, checked-in values
+      - key: PORT
+        value: "8000"
+      - key: EMBEDDING_BACKEND
+        value: cohere
+      - key: FUSION_TICK_SECONDS
+        value: "3.0"
+      - key: COOKIE_SAMESITE
+        value: none
+      - key: COOKIE_SECURE
+        value: "true"
+      # Secrets — Render prompts for these in the dashboard
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: COHERE_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_URL_SYNC
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
