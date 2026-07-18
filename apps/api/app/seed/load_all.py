@@ -11,18 +11,17 @@ from __future__ import annotations
 import json
 import re
 import uuid
-from pathlib import Path
 
 from sqlalchemy import create_engine, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.paths import repo_root
 from app.models import SOP, User, VenueEdge, VenueNode
 from app.models.user import Role, Tier
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
-DATA_DIR = REPO_ROOT / "data"
+DATA_DIR = repo_root() / "data"
 
 
 def load_venue(session: Session) -> None:

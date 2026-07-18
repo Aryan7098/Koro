@@ -21,10 +21,10 @@ from __future__ import annotations
 
 import json
 from functools import lru_cache
-from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
-SCENARIOS_DIR = REPO_ROOT / "data" / "scenarios"
+from app.core.paths import repo_root
+
+SCENARIOS_DIR = repo_root() / "data" / "scenarios"
 
 
 ALLOWED_KINDS = {

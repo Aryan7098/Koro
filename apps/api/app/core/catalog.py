@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import json
 from functools import lru_cache
-from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
-CATEGORIES_PATH = REPO_ROOT / "packages" / "schemas" / "categories.json"
+from app.core.paths import repo_root
+
+CATEGORIES_PATH = repo_root() / "packages" / "schemas" / "categories.json"
 
 
 @lru_cache
