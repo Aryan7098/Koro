@@ -175,3 +175,100 @@ export function fanEventSource(deviceFp: string | null, userId?: string | null):
   const qs = new URLSearchParams(params).toString();
   return new EventSource(`${BASE}/realtime/fan?${qs}`);
 }
+
+// EventSource does not send Authorization headers — we pass user_id in the
+// query string and let the SSE endpoint scope by that (it is a bus key, not
+// an auth check). For hackathon fidelity that's enough.
+export function staffEventSource(userId: string): EventSource {
+  return new EventSource(`${BASE}/realtime/staff?user_id=${encodeURIComponent(userId)}`);
+}
+
+// ---------- staff --------------------------------------------------------
+
+export type StaffEvent = {
+  id: string;
+  node_id: string;
+  category: string;
+  severity: string;
+  confidence_band: string;
+  confidence_score: number;
+  status: string;
+  canonical_summary: string | null;
+  severity_reason: string | null;
+  source_mix: Record<string, unknown>;
+  distinct_observers: number;
+  first_seen: string | null;
+  last_seen: string | null;
+  resolved_at: string | null;
+};
+
+export type PendingAuth = {
+  auth_id: string;
+  created_at: string | null;
+  proposed_action: Record<string, unknown>;
+  evidence: Record<string, unknown>;
+  event: StaffEvent;
+};
+
+export type EventLineage = {
+  event: StaffEvent;
+  reports: Array<{
+    id: string;
+    source: string;
+    source_user_id: string | null;
+    device_fp: string | null;
+    raw_text: string | null;
+    raw_language: string | null;
+    category_hint: string | null;
+    node_hint: string | null;
+    normalized: Record<string, unknown> | null;
+    confirm_value: string | null;
+    created_at: string | null;
+  }>;
+  ledger: Array<{
+    id: string;
+    action: string;
+    actor_user_id: string | null;
+    report_ids: string[];
+    payload: Record<string, unknown>;
+    notes: string | null;
+    created_at: string | null;
+  }>;
+};
+
+export async function staffQueue(): Promise<StaffEvent[]> {
+  return req('/staff/queue');
+}
+
+export async function staffAuthorizeQueue(): Promise<PendingAuth[]> {
+  return req('/staff/authorize');
+}
+
+export async function staffResolveQueue(): Promise<StaffEvent[]> {
+  return req('/staff/resolve');
+}
+
+export async function approveAuth(authId: string, reason?: string) {
+  return req(`/staff/authorize/${authId}/approve`, {
+    method: 'POST',
+    body: JSON.stringify({ reason: reason || null }),
+  });
+}
+
+export async function denyAuth(authId: string, reason?: string) {
+  return req(`/staff/authorize/${authId}/deny`, {
+    method: 'POST',
+    body: JSON.stringify({ reason: reason || null }),
+  });
+}
+
+export async function resolveEvent(eventId: string, reason?: string) {
+  return req(`/staff/events/${eventId}/resolve`, {
+    method: 'POST',
+    body: JSON.stringify({ reason: reason || null }),
+  });
+}
+
+export async function eventLineage(eventId: string): Promise<EventLineage> {
+  return req(`/events/${eventId}/lineage`);
+}
