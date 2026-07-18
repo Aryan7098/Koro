@@ -9,7 +9,7 @@ services:
     dockerfilePath: ./apps/api/Dockerfile
     dockerContext: .          # repo root, so Dockerfile can COPY data/ and packages/
     plan: free
-    region: singapore
+    region: oregon        # Render free tier: Oregon and Frankfurt only
     healthCheckPath: /health
     envVars:
       # Non-secret, checked-in values
