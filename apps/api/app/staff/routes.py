@@ -327,12 +327,31 @@ async def resolve_event(
         )
     )
 
-    # Notify staff/organizer channels so their UIs refresh; loop-closure to
-    # fans lands in Milestone 11.
+    # Notify staff/organizer channels so their UIs refresh
     payload = {"event_id": str(event.id), "category": event.category, "node_id": event.node_id}
     bus.publish_role_broadcast("staff", "event.resolved", payload)
     bus.publish_role_broadcast("organizer", "event.resolved", payload)
 
+    # Loop closure — push a per-language "fixed, thanks" to every fan who reported
+    from app.rendering.closure import notify_resolved
+
+    try:
+        notified_count = await notify_resolved(session, event, body.reason)
+    except Exception as e:  # pragma: no cover — degrade gracefully
+        notified_count = 0
+        session.add(
+            ResolutionLedger(
+                id=uuid.uuid4(),
+                event_id=event.id,
+                action=LedgerAction.NOTIFIED.value,
+                notes=f"loop closure failed: {e}",
+            )
+        )
+
     await session.commit()
-    return {"event_id": str(event.id), "status": event.status,
-            "resolved_at": event.resolved_at.isoformat()}
+    return {
+        "event_id": str(event.id),
+        "status": event.status,
+        "resolved_at": event.resolved_at.isoformat(),
+        "reporters_notified": notified_count,
+    }

@@ -22,7 +22,7 @@ import {
   venueGraph,
 } from '../../lib/api';
 
-type StoredNudge = { nudge: FanNudge; at: number };
+type StoredNudge = { nudge: FanNudge; at: number; resolved?: boolean };
 
 export default function FanPage() {
   const [me, setMe] = useState<Me | null>(null);
@@ -87,6 +87,7 @@ export default function FanPage() {
           setNudges((cur) => [{ nudge: parsed.data as FanNudge, at: Date.now() }, ...cur].slice(0, 12));
         }
         if (parsed?.type === 'fan.resolved' && parsed.data) {
+          const took = parsed.data.took_minutes;
           setNudges((cur) =>
             [
               {
@@ -97,10 +98,14 @@ export default function FanPage() {
                   band: 'CONFIRMED',
                   node_id: parsed.data.node_id || '',
                   lang: parsed.data.lang || 'en',
-                  headline: parsed.data.headline || 'Resolved',
-                  body: parsed.data.body || 'Fixed. Thanks for reporting.',
+                  headline: parsed.data.headline || '✓ Resolved',
+                  body:
+                    (parsed.data.body || 'Fixed. Thanks for reporting.') +
+                    (typeof took === 'number' ? '' : ''),
+                  action_hint: undefined,
                 },
                 at: Date.now(),
+                resolved: true,
               },
               ...cur,
             ].slice(0, 12)
@@ -283,6 +288,7 @@ export default function FanPage() {
                 arrivedAt={n.at}
                 reporterCount={openAtNode?.distinct_observers}
                 nodesById={nodesById}
+                resolved={n.resolved}
               />
             );
           })}
