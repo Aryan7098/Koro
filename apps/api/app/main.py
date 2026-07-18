@@ -14,6 +14,7 @@ from app.ingress.reports import router as reports_router
 from app.ingress.signals import router as signals_router
 from app.realtime.routes import router as realtime_router
 from app.simulator.routes import router as simulator_router
+from app.organizer.routes import router as organizer_router
 from app.staff.routes import router as staff_router
 from app.state.routes import ledger_router, router as venue_router
 from app.volunteer.routes import router as volunteer_router
@@ -55,6 +56,7 @@ app.include_router(simulator_router)
 app.include_router(realtime_router)
 app.include_router(staff_router)
 app.include_router(volunteer_router)
+app.include_router(organizer_router)
 
 
 @app.get("/health")

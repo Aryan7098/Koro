@@ -362,3 +362,96 @@ export async function volunteerDeny(eventId: string, note?: string) {
 export function volunteerEventSource(userId: string): EventSource {
   return new EventSource(`${BASE}/realtime/volunteer?user_id=${encodeURIComponent(userId)}`);
 }
+
+export function organizerEventSource(): EventSource {
+  return new EventSource(`${BASE}/realtime/organizer`);
+}
+
+// ---------- organizer ----------------------------------------------------
+
+export type OrganizerMetrics = {
+  window_hours: number;
+  events_seen: number;
+  events_open: number;
+  events_resolved: number;
+  events_dismissed: number;
+  pending_authorizations: number;
+  loop_closure_notifications: number;
+  avg_time_to_confirmed_seconds: number | null;
+  manipulation_suppressed: number;
+};
+
+export type Pattern = {
+  category: string;
+  node_id: string;
+  count: number;
+  resolved: number;
+  confirmed: number;
+  avg_severity_score: number;
+};
+
+export type OrganizerLive = {
+  nodes: Array<{
+    id: string;
+    name: string;
+    type: string;
+    lat: number;
+    lng: number;
+    level: number;
+    is_open: boolean;
+  }>;
+  events: Array<{
+    id: string;
+    node_id: string;
+    category: string;
+    severity: string;
+    confidence_band: string;
+    status: string;
+    distinct_observers: number;
+    canonical_summary: string | null;
+  }>;
+};
+
+export async function organizerMetrics(): Promise<OrganizerMetrics> {
+  return req('/organizer/metrics');
+}
+export async function organizerPatterns(): Promise<Pattern[]> {
+  return req('/organizer/patterns');
+}
+export async function organizerLive(): Promise<OrganizerLive> {
+  return req('/organizer/live');
+}
+
+// ---------- simulator ----------------------------------------------------
+
+export async function listScenarios(): Promise<Array<{
+  name: string;
+  description: string | null;
+  steps: number;
+}>> {
+  return req('/simulator/scenarios');
+}
+
+export async function runScenario(name: string) {
+  return req('/simulator/run', { method: 'POST', body: JSON.stringify({ name }) });
+}
+export async function stopScenario() {
+  return req('/simulator/stop', { method: 'POST', body: '{}' });
+}
+export async function simulatorStatus(): Promise<{
+  running: boolean;
+  scenario_name: string | null;
+  started_at: string | null;
+  steps_total: number;
+  steps_completed: number;
+  last_error: string | null;
+  log: Array<Record<string, unknown>>;
+}> {
+  return req('/simulator/status');
+}
+export async function simulatorInject(kind: string, payload: Record<string, unknown>) {
+  return req('/simulator/inject', {
+    method: 'POST',
+    body: JSON.stringify({ kind, payload }),
+  });
+}
