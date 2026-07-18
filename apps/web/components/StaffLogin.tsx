@@ -5,10 +5,13 @@ import { Me, login } from '../lib/api';
 
 // Seeded operational personas.
 const STAFF_USERS = [
-  { username: 'staff_ops', display: 'Ops Control', desc: 'spills, gates, restrooms, wayfinding, crowd' },
-  { username: 'staff_medical', display: 'Medical Supervisor', desc: 'medical only' },
-  { username: 'staff_security', display: 'Security Lead', desc: 'security, structural' },
-  { username: 'organizer', display: 'Match Organizer', desc: 'observes all categories' },
+  { username: 'staff_ops', display: 'Ops Control', desc: 'spills, gates, restrooms, wayfinding, crowd', role: 'staff' },
+  { username: 'staff_medical', display: 'Medical Supervisor', desc: 'medical only', role: 'staff' },
+  { username: 'staff_security', display: 'Security Lead', desc: 'security, structural', role: 'staff' },
+  { username: 'organizer', display: 'Match Organizer', desc: 'observes all categories', role: 'organizer' },
+  { username: 'vol_north', display: 'Priya (Volunteer)', desc: 'zone: north 100', role: 'volunteer' },
+  { username: 'vol_south', display: 'Diego (Volunteer)', desc: 'zone: south 100', role: 'volunteer' },
+  { username: 'vol_mezz', display: 'Aisha (Volunteer)', desc: 'zone: mezzanine 200', role: 'volunteer' },
 ];
 
 type Props = {
@@ -21,11 +24,14 @@ export default function StaffLogin({ onLogin, role = 'staff' }: Props) {
   const [err, setErr] = useState<string | null>(null);
   const [username, setUsername] = useState('');
 
-  const shown = role === 'organizer'
-    ? STAFF_USERS.filter((u) => u.username === 'organizer')
-    : role === 'staff'
-      ? STAFF_USERS
-      : STAFF_USERS;
+  const shown =
+    role === 'organizer'
+      ? STAFF_USERS.filter((u) => u.role === 'organizer')
+      : role === 'staff'
+        ? STAFF_USERS.filter((u) => u.role === 'staff' || u.role === 'organizer')
+        : role === 'volunteer'
+          ? STAFF_USERS.filter((u) => u.role === 'volunteer' || u.role === 'staff')
+          : STAFF_USERS;
 
   async function pick(u: string) {
     setBusy(u);

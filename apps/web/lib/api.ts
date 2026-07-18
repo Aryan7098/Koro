@@ -272,3 +272,57 @@ export async function resolveEvent(eventId: string, reason?: string) {
 export async function eventLineage(eventId: string): Promise<EventLineage> {
   return req(`/events/${eventId}/lineage`);
 }
+
+// ---------- volunteer ----------------------------------------------------
+
+export type VolunteerTask = {
+  id: string;
+  node_id: string;
+  category: string;
+  severity: string;
+  confidence_band: string;
+  canonical_summary: string | null;
+  distinct_observers: number;
+  source_mix: Record<string, unknown>;
+  first_seen: string | null;
+  last_seen: string | null;
+};
+
+export type VolunteerScript = {
+  event_id: string;
+  category: string;
+  severity: string;
+  band: string;
+  node_id: string;
+  needs_verification: boolean;
+  verify_prompt?: string;
+  do: string[];
+  say: string;
+  at?: string;
+};
+
+export async function volunteerTasks(): Promise<VolunteerTask[]> {
+  return req('/volunteer/tasks');
+}
+
+export async function volunteerScripts(): Promise<VolunteerScript[]> {
+  return req('/volunteer/scripts');
+}
+
+export async function volunteerConfirm(eventId: string, note?: string) {
+  return req('/volunteer/confirm', {
+    method: 'POST',
+    body: JSON.stringify({ event_id: eventId, note: note || null }),
+  });
+}
+
+export async function volunteerDeny(eventId: string, note?: string) {
+  return req('/volunteer/deny', {
+    method: 'POST',
+    body: JSON.stringify({ event_id: eventId, note: note || null }),
+  });
+}
+
+export function volunteerEventSource(userId: string): EventSource {
+  return new EventSource(`${BASE}/realtime/volunteer?user_id=${encodeURIComponent(userId)}`);
+}
