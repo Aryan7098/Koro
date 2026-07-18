@@ -1,0 +1,48 @@
+# Fly.io deployment for the EchoStand API.
+# Usage:
+#     cd echostand
+#     fly launch --copy-config --dockerfile apps/api/Dockerfile --no-deploy
+#     fly secrets set ANTHROPIC_API_KEY=... COHERE_API_KEY=... \
+#                     DATABASE_URL=... DATABASE_URL_SYNC=... REDIS_URL=... \
+#                     JWT_SECRET=$(openssl rand -hex 32) \
+#                     CORS_ORIGINS=https://<your-vercel-app>.vercel.app
+#     fly deploy
+#
+# The app must be deployed from the repo root because the Dockerfile
+# COPYs data/ and packages/ that live outside apps/api/.
+
+app = "echostand-api"
+primary_region = "iad"
+
+[build]
+  dockerfile = "apps/api/Dockerfile"
+
+[env]
+  PORT = "8000"
+  EMBEDDING_BACKEND = "cohere"
+  FUSION_TICK_SECONDS = "3.0"
+  # CORS_ORIGINS overridden per-deploy via `fly secrets set`
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "off"      # SSE needs the machine always up
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 200
+    soft_limit = 150
+
+[[vm]]
+  # 1 shared CPU, 512 MB RAM. Fly's free tier gives 3 of these — pick one.
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "512mb"
+
+[[services.tcp_checks]]
+  interval = "15s"
+  timeout = "3s"
+  grace_period = "10s"

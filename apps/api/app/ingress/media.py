@@ -11,12 +11,14 @@ import uuid
 from functools import lru_cache
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
-from minio import Minio
-from minio.error import S3Error
 
 from app.core.config import settings
 
 router = APIRouter(prefix="/media", tags=["ingress:media"])
+
+
+def _media_enabled() -> bool:
+    return bool(settings.minio_endpoint)
 
 
 ALLOWED_CONTENT_TYPES = {
@@ -33,7 +35,13 @@ MAX_BYTES = 8 * 1024 * 1024  # 8 MiB
 
 
 @lru_cache
-def _client() -> Minio:
+def _client():
+    """Return a MinIO client, or None when media storage is disabled."""
+    if not _media_enabled():
+        return None
+    # Import lazily so deployments without object storage don't need the SDK.
+    from minio import Minio  # type: ignore
+
     client = Minio(
         settings.minio_endpoint,
         access_key=settings.minio_access_key,
@@ -47,6 +55,12 @@ def _client() -> Minio:
 
 @router.post("")
 async def upload_media(file: UploadFile = File(...)) -> dict:
+    if not _media_enabled():
+        raise HTTPException(
+            status.HTTP_501_NOT_IMPLEMENTED,
+            "media storage disabled in this deployment "
+            "(set MINIO_ENDPOINT or point at S3/R2 to enable photos + voice)",
+        )
     if file.content_type not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(
             status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
@@ -68,8 +82,8 @@ async def upload_media(file: UploadFile = File(...)) -> dict:
             length=len(data),
             content_type=file.content_type,
         )
-    except S3Error as e:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, f"minio: {e}") from e
+    except Exception as e:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, f"upload failed: {e}") from e
 
     return {
         "media_id": object_name,

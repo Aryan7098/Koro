@@ -16,8 +16,7 @@ dependencies = [
     "redis>=5.2",
     "arq>=0.26",
     "anthropic>=0.40",
-    "sentence-transformers>=3.3",
-    "torch>=2.5",
+    "cohere>=5.11",
     "python-jose[cryptography]>=3.3",
     "passlib[bcrypt]>=1.7",
     "python-multipart>=0.0.17",
@@ -26,10 +25,17 @@ dependencies = [
     "sse-starlette>=2.1",
     "orjson>=3.10",
     "numpy>=1.26",
-    "openai>=1.55",
 ]
 
 [project.optional-dependencies]
+# Local embedding model — used only when EMBEDDING_BACKEND=local.
+# Pulls torch (~1GB) so we keep it optional; the cloud-deployed image
+# should not install this extra.
+local-embed = [
+    "sentence-transformers>=3.3",
+    "torch>=2.5",
+]
+
 dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",

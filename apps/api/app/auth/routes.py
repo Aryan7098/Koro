@@ -80,12 +80,14 @@ async def fan_session(request: Request, response: Response) -> FanSessionRespons
     al = request.headers.get("accept-language", "")
     salt = secrets.token_hex(8)
     fp = hashlib.sha256(f"{ua}|{al}|{salt}".encode()).hexdigest()[:32]
+    from app.core.config import settings as _s
     response.set_cookie(
         "echostand_fp",
         fp,
         max_age=60 * 60 * 24 * 30,
         httponly=True,
-        samesite="lax",
+        samesite=_s.cookie_samesite,   # "none" for cross-site deploys
+        secure=_s.cookie_secure,       # required alongside samesite="none"
     )
     return FanSessionResponse(device_fp=fp)
 

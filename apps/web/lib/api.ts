@@ -1,6 +1,13 @@
-// Thin client for the FastAPI backend. Uses relative paths so the Next.js
-// rewrite in next.config.mjs proxies /api/* to :8000 in dev.
-const BASE = '/api';
+// Thin client for the FastAPI backend.
+//
+// - In production (Vercel), set NEXT_PUBLIC_API_BASE_URL to the backend URL
+//   (e.g. https://echostand-api.fly.dev). All fetches + SSE go direct,
+//   bypassing Vercel's rewrite (better for long-lived SSE connections).
+// - In dev, leave NEXT_PUBLIC_API_BASE_URL unset. The Next.js rewrite in
+//   next.config.mjs sends /api/* to http://localhost:8000.
+const BASE =
+  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_BASE_URL) ||
+  '/api';
 
 // ---------- shared types -------------------------------------------------
 

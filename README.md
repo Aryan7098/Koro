@@ -11,6 +11,12 @@ Build plan: `~/.claude/plans/luminous-coalescing-sutton.md`.
 
 **Status: all 13 milestones landed.**
 
+## Live deploy (free tier)
+
+Full walkthrough in **[`DEPLOY.md`](./DEPLOY.md)**. Two-platform stack:
+Vercel (frontend) + Fly.io (backend) + Neon (Postgres) + Upstash (Redis) +
+Cohere (embeddings). Total cost: $0/month, always-on.
+
 ## What's here
 
 | Milestone | Feature | Where |
