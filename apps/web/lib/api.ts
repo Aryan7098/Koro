@@ -15,6 +15,16 @@ export type FanNudge = {
   body: string;
   action_hint?: string;
   next_node_id?: string | null;
+  planned_route?: {
+    from: string;
+    to: string;
+    node_path: string[];
+    node_names: string[];
+    distance_m: number;
+    step_free: boolean;
+    low_stimulus: boolean;
+    reason: string;
+  };
 };
 
 export type ActiveEvent = {
@@ -148,6 +158,32 @@ export async function listActiveEvents(): Promise<ActiveEvent[]> {
 
 export async function venueGraph(): Promise<{ nodes: VenueNode[]; edges: any[] }> {
   return req('/venue/graph');
+}
+
+export async function planRoute(params: {
+  from_id: string;
+  category?: string;
+  avoid_id?: string;
+  mobility?: boolean;
+  sensory?: boolean;
+}): Promise<{
+  from_id: string;
+  to_id: string | null;
+  node_path: string[];
+  node_names: string[];
+  distance_m: number;
+  step_free: boolean;
+  low_stimulus: boolean;
+  accessibility: { mobility: boolean; sensory: boolean };
+  reason: string;
+}> {
+  const qs = new URLSearchParams();
+  qs.set('from_id', params.from_id);
+  if (params.category) qs.set('category', params.category);
+  if (params.avoid_id) qs.set('avoid_id', params.avoid_id);
+  if (params.mobility) qs.set('mobility', 'true');
+  if (params.sensory) qs.set('sensory', 'true');
+  return req(`/venue/plan?${qs.toString()}`);
 }
 
 // ---------- media --------------------------------------------------------

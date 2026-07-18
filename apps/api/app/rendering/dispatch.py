@@ -118,26 +118,33 @@ async def dispatch_render(
 
 
 async def _render_fan(session: AsyncSession, ctx, event: CanonicalEvent) -> None:
-    """Render fan nudges — batched by accessibility profile.
+    """Render fan nudges — batched by (accessibility profile, home node).
 
-    Each unique accessibility profile is a separate Sonnet call requesting
-    every language present in that group. Cuts the per-event LLM call count
-    from N (fans) down to K (distinct profiles), typically 2-3.
+    Rationale: accessibility affects the deterministic Dijkstra reroute
+    (each home_node × accessibility combo yields a distinct path), and the
+    LLM call needs the same path for every fan in the batch. Fans without an
+    accessibility profile share a single non-personalized nudge.
     """
     fans = await _subscribed_fan_users(session)
     if not fans:
         return
 
-    # Group by (mobility, sensory) — the only two flags we currently render for
-    groups: dict[tuple[bool, bool], list] = {}
+    # Split fans into two groups:
+    #   - "personalized" — have a home node AND an accessibility flag
+    #                      → one render per (mobility, sensory, home_node)
+    #   - "generic"      — no home node or no accessibility flags
+    #                      → one render per (mobility, sensory) with no route
+    personalized: dict[tuple[bool, bool, str], list] = {}
+    generic: dict[tuple[bool, bool], list] = {}
     for fan in fans:
-        key = (
-            bool((fan.accessibility_profile or {}).get("mobility")),
-            bool((fan.accessibility_profile or {}).get("sensory")),
-        )
-        groups.setdefault(key, []).append(fan)
+        mob = bool((fan.accessibility_profile or {}).get("mobility"))
+        sen = bool((fan.accessibility_profile or {}).get("sensory"))
+        if fan.home_node_id and (mob or sen):
+            personalized.setdefault((mob, sen, fan.home_node_id), []).append(fan)
+        else:
+            generic.setdefault((mob, sen), []).append(fan)
 
-    for (mobility, sensory), members in groups.items():
+    async def _emit(members: list, mob: bool, sen: bool, home: str | None) -> None:
         langs = sorted({(f.language or "en") for f in members})
         result = await fan_render.render_fan_nudge(
             ctx=ctx,
@@ -146,16 +153,15 @@ async def _render_fan(session: AsyncSession, ctx, event: CanonicalEvent) -> None
             severity=event.severity,
             source_mix=event.source_mix or {},
             languages=langs,
-            accessibility={"mobility": mobility, "sensory": sensory},
+            accessibility={"mobility": mob, "sensory": sen},
+            fan_home_id=home,
         )
         if not result:
-            continue
+            return
         nudges = result.get("nudges", {}) or {}
+        planned_route = result.get("_planned_route")
         for fan in members:
-            nudge = nudges.get(fan.language or "en")
-            if not nudge:
-                # Fallback to English if this lang missing from the response
-                nudge = nudges.get("en")
+            nudge = nudges.get(fan.language or "en") or nudges.get("en")
             if not nudge:
                 continue
             payload = {
@@ -167,8 +173,15 @@ async def _render_fan(session: AsyncSession, ctx, event: CanonicalEvent) -> None
                 "lang": fan.language,
                 **nudge,
             }
+            if planned_route:
+                payload["planned_route"] = planned_route
             bus.publish("fan", str(fan.id), "fan.nudge", payload)
             _log_render(session, event, f"fan:{fan.username}", payload)
+
+    for (mob, sen, home), members in personalized.items():
+        await _emit(members, mob, sen, home)
+    for (mob, sen), members in generic.items():
+        await _emit(members, mob, sen, None)
 
 
 async def _render_staff(

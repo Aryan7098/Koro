@@ -12,9 +12,47 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
+from app.fusion.venue_graph import load_graph
 from app.models import CanonicalEvent, EventReport, Report, ResolutionLedger, VenueEdge, VenueNode
+from app.rendering.pathplan import plan_reroute
 
 router = APIRouter(prefix="/venue", tags=["state:venue"])
+
+
+@router.get("/plan")
+async def plan_route(
+    session: Annotated[AsyncSession, Depends(get_session)],
+    from_id: str,
+    category: str = "wayfinding",
+    avoid_id: str | None = None,
+    mobility: bool = False,
+    sensory: bool = False,
+) -> dict:
+    """Deterministic accessibility-aware Dijkstra reroute.
+
+    Powers the control-panel path visualization and the FR8 demo beat: the
+    same call the fan renderer makes, exposed as a diagnostic endpoint so
+    reviewers can see the exact path (never invented, never LLM-generated).
+    """
+    graph = await load_graph(session)
+    route = plan_reroute(
+        graph,
+        from_id=from_id,
+        category=category,
+        avoid_id=avoid_id,
+        accessibility={"mobility": mobility, "sensory": sensory},
+    )
+    return {
+        "from_id": route.from_id,
+        "to_id": route.to_id,
+        "node_path": route.node_path,
+        "node_names": route.node_names,
+        "distance_m": route.distance_m,
+        "step_free": route.step_free,
+        "low_stimulus": route.low_stimulus,
+        "accessibility": route.accessibility,
+        "reason": route.reason,
+    }
 
 
 @router.get("/graph")

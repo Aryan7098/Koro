@@ -62,6 +62,28 @@ export default function NudgeCard({ nudge, arrivedAt, reporterCount, nodesById }
           </span>
         </div>
       )}
+      {nudge.planned_route && nudge.planned_route.node_names.length > 0 && (
+        <div className="mt-3 p-3 rounded bg-emerald-950/40 border border-emerald-800/60 text-xs">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-emerald-300 font-medium">Planned route</span>
+            {nudge.planned_route.step_free && (
+              <span className="px-1.5 py-0.5 rounded bg-emerald-800/60 text-emerald-200 text-[10px]">
+                step-free
+              </span>
+            )}
+            {nudge.planned_route.low_stimulus && (
+              <span className="px-1.5 py-0.5 rounded bg-emerald-800/60 text-emerald-200 text-[10px]">
+                low-stimulus
+              </span>
+            )}
+            <span className="ml-auto text-slate-500">
+              ≈ {Math.round(nudge.planned_route.distance_m)} m
+            </span>
+          </div>
+          <div className="text-slate-300">{nudge.planned_route.node_names.join(' → ')}</div>
+          <div className="text-slate-500 italic mt-1">{nudge.planned_route.reason}</div>
+        </div>
+      )}
       {reporterCount && reporterCount > 1 && (
         <div className="text-xs text-slate-500 mt-3 border-t border-slate-800 pt-2">
           {reporterCount.toLocaleString()} fans flagged this — your report matters.
