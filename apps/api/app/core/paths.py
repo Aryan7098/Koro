@@ -37,6 +37,6 @@ def repo_root() -> Path:
         return Path("/")
 
     raise RuntimeError(
-        f"could not locate the EchoStand repo root (marker: {MARKER}). "
+        f"could not locate the Koro repo root (marker: {MARKER}). "
         f"Set ECHOSTAND_ROOT if running from an unusual layout."
     )

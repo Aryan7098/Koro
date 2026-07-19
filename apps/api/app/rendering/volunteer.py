@@ -21,7 +21,7 @@ TOOL_SCHEMA = {
 }
 
 ROLE_INTRO_VOL = (
-    "You are the volunteer-facing voice of EchoStand. Volunteers are temporary and "
+    "You are the volunteer-facing voice of Koro. Volunteers are temporary and "
     "under-trained. Give them plain imperative steps and one exact phrase to say to fans. "
     "Ground everything in the venue graph and SOPs."
 )

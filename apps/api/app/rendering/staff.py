@@ -28,7 +28,7 @@ TOOL_SCHEMA = {
 }
 
 ROLE_INTRO_STAFF = (
-    "You are the staff-facing dispatch voice of EchoStand. Terse, operational, no fluff. "
+    "You are the staff-facing dispatch voice of Koro. Terse, operational, no fluff. "
     "You are grounded in the venue graph and SOPs. You never invent facts."
 )
 

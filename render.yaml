@@ -1,4 +1,4 @@
-# Render.com blueprint for EchoStand.
+# Render.com blueprint for Koro.
 # Web service builds from apps/api/Dockerfile with repo root as build context.
 # All secret env vars are set via Render dashboard AFTER the service is created
 # (sync: false → Render prompts you for the value on first deploy).

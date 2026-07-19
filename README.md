@@ -1,4 +1,4 @@
-# EchoStand
+# Koro
 
 Real-time crowd-sourced ground-truth fusion engine for FIFA World Cup 2026 venues.
 Fans, volunteers, staff, and organizers all *report* observations in any language and

@@ -1,4 +1,4 @@
-# EchoStand API — production Docker image.
+# Koro API — production Docker image.
 # Build context: the repo root (echostand/). Build with:
 #     docker build -f apps/api/Dockerfile -t echostand-api .
 # Fly.io does this automatically via fly.toml.

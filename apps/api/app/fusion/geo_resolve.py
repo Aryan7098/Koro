@@ -31,7 +31,7 @@ def _tool_schema(candidate_ids: list[str]) -> dict:
     }
 
 
-CACHED_SYSTEM = """You are the geo-resolve step of EchoStand.
+CACHED_SYSTEM = """You are the geo-resolve step of Koro.
 
 Rules:
 1. Choose exactly one node_id from the provided candidates. Never invent one.

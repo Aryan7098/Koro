@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="EchoStand API",
+    title="Koro API",
     version="0.1.0",
     description="Real-time crowd-sourced ground-truth fusion for FIFA 2026 venues.",
     lifespan=lifespan,
@@ -67,7 +67,7 @@ async def health() -> dict[str, str]:
 @app.get("/")
 async def root() -> dict[str, str]:
     return {
-        "name": "EchoStand API",
+        "name": "Koro API",
         "version": "0.1.0",
         "docs": "/docs",
     }

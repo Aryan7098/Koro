@@ -29,7 +29,7 @@ TOOL_SCHEMA = {
 }
 
 
-CACHED_SYSTEM = """You are the severity step of EchoStand's fusion pipeline.
+CACHED_SYSTEM = """You are the severity step of Koro's fusion pipeline.
 
 Rules — non-negotiable:
 1. Read the cluster of reports as a whole. If any report describes an actual medical \

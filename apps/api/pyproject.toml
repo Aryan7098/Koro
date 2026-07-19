@@ -1,7 +1,7 @@
 [project]
 name = "echostand-api"
 version = "0.1.0"
-description = "EchoStand API — real-time crowd-sourced ground-truth fusion for FIFA 2026 venues"
+description = "Koro API — real-time crowd-sourced ground-truth fusion for FIFA 2026 venues"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115",

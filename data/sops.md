@@ -1,4 +1,4 @@
-# EchoStand SOPs — MetLife Stadium (Demo Corpus)
+# Koro SOPs — MetLife Stadium (Demo Corpus)
 
 These are organizer-approved procedures used to ground the rendering layer.
 Each `## SOP: <title>` block is one entry loaded into the `sops` table.

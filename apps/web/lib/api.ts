@@ -76,7 +76,7 @@ export type Me = {
 
 // ---------- token storage ------------------------------------------------
 
-const TOKEN_KEY = 'echostand:token';
+const TOKEN_KEY = 'koro:token';
 
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null;

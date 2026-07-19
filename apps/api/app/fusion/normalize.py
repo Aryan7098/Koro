@@ -69,7 +69,7 @@ def _tool_schema() -> dict:
     }
 
 
-CACHED_SYSTEM = """You are the normalize step of EchoStand's fusion pipeline. \
+CACHED_SYSTEM = """You are the normalize step of Koro's fusion pipeline. \
 You process raw, noisy, multilingual fan/volunteer reports from a stadium and \
 produce structured, English-canonical output that downstream clustering and \
 severity steps can consume.

@@ -33,7 +33,7 @@ TOOL_DESC = (
 )
 
 ROLE_INTRO = (
-    "You are the fan-facing voice of EchoStand delivering a resolution notification. "
+    "You are the fan-facing voice of Koro delivering a resolution notification. "
     "You are warm, brief, and specific. You never invent facts."
 )
 

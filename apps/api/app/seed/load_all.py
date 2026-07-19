@@ -236,7 +236,7 @@ def load_users(session: Session) -> None:
 def main() -> None:
     engine = create_engine(settings.database_url_sync, future=True)
     with Session(engine) as session:
-        print("Seeding EchoStand database …")
+        print("Seeding Koro database …")
         print("- Venue graph (MetLife)")
         load_venue(session)
         print("- SOP corpus")

@@ -1,4 +1,4 @@
-# Fly.io deployment for the EchoStand API.
+# Fly.io deployment for the Koro API.
 # Usage:
 #     cd echostand
 #     fly launch --copy-config --dockerfile apps/api/Dockerfile --no-deploy

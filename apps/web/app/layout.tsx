@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'EchoStand — World Cup ’26 Crowd Intelligence',
+  title: 'Koro — World Cup ’26 Crowd Intelligence',
   description: 'Real-time ground-truth for FIFA World Cup 2026 venues.',
 };
 

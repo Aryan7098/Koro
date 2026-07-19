@@ -120,7 +120,7 @@ export default function Home() {
               animate={{ y: 0 }}
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
             >
-              EchoStand
+              Koro
             </motion.span>
           </h1>
 
@@ -131,7 +131,7 @@ export default function Home() {
             className="text-slate-300 mt-5 max-w-2xl text-lg leading-relaxed"
           >
             80,000 fans, four hundred volunteers, dozens of staff — one shared nervous system.
-            EchoStand fuses tens of thousands of noisy multilingual reports into one trusted live
+            Koro fuses tens of thousands of noisy multilingual reports into one trusted live
             picture, then speaks it back to each audience in their own language.
           </motion.p>
         </section>

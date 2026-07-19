@@ -1,7 +1,7 @@
 {
   "venue": "MetLife Stadium",
   "location": "East Rutherford, NJ",
-  "notes": "Hand-authored simplified graph for EchoStand hackathon. Coordinates are approximate (WGS84). Level: 100 = lower bowl, 200 = mezzanine, 300 = upper bowl, 0 = exterior/plaza, 400 = concourse-only.",
+  "notes": "Hand-authored simplified graph for Koro hackathon. Coordinates are approximate (WGS84). Level: 100 = lower bowl, 200 = mezzanine, 300 = upper bowl, 0 = exterior/plaza, 400 = concourse-only.",
   "nodes": [
     {"id": "gate_a", "name": "Gate A", "type": "gate", "lat": 40.8135, "lng": -74.0745, "level": 0, "capacity": 15000, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"quadrant": "NW"}},
     {"id": "gate_b", "name": "Gate B", "type": "gate", "lat": 40.8145, "lng": -74.0735, "level": 0, "capacity": 12000, "step_free": true, "low_stimulus": false, "is_open": true, "metadata": {"quadrant": "N"}},

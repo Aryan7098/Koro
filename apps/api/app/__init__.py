@@ -1,1 +1,1 @@
-"""EchoStand API package."""
+"""Koro API package."""
