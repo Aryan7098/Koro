@@ -57,33 +57,48 @@ export default function EvidencePanel({ eventId, onClose }: Props) {
                   Reports ({data.reports.length})
                 </div>
                 <div className="space-y-2">
-                  {data.reports.map((r) => (
-                    <div
-                      key={r.id}
-                      className="p-3 rounded bg-slate-900/60 border border-slate-800 text-sm"
-                    >
-                      <div className="flex items-baseline gap-2 text-xs text-slate-500 mb-1">
-                        <span className="px-1.5 py-0.5 rounded bg-slate-800">{r.source}</span>
-                        {r.raw_language && (
-                          <span className="px-1.5 py-0.5 rounded bg-slate-800">{r.raw_language}</span>
-                        )}
-                        {r.confirm_value && (
-                          <span className="px-1.5 py-0.5 rounded bg-slate-800 uppercase">
-                            {r.confirm_value}
-                          </span>
-                        )}
-                        <span className="ml-auto">
-                          {r.created_at?.slice(11, 19)}
-                        </span>
-                      </div>
-                      {r.raw_text && <div className="text-slate-300">{r.raw_text}</div>}
-                      {r.normalized && (r.normalized as any).canonical_en && (
-                        <div className="text-xs text-slate-500 italic mt-1">
-                          → {(r.normalized as any).canonical_en}
+                  {data.reports.map((r) => {
+                    const canonical = (r.normalized as any)?.canonical_en as string | undefined;
+                    const text = r.raw_text || r.category_hint;
+                    const showCanonical =
+                      canonical && canonical !== '(no text)' && canonical !== text;
+                    return (
+                      <div
+                        key={r.id}
+                        className="p-3 rounded bg-slate-900/60 border border-slate-800 text-sm"
+                      >
+                        <div className="flex items-baseline gap-2 text-xs text-slate-500 mb-2">
+                          <span className="px-1.5 py-0.5 rounded bg-slate-800">{r.source}</span>
+                          {r.raw_language && (
+                            <span className="px-1.5 py-0.5 rounded bg-slate-800 uppercase">
+                              {r.raw_language}
+                            </span>
+                          )}
+                          {r.confirm_value && (
+                            <span className="px-1.5 py-0.5 rounded bg-slate-800 uppercase">
+                              {r.confirm_value}
+                            </span>
+                          )}
+                          {r.node_hint && (
+                            <span className="px-1.5 py-0.5 rounded bg-slate-800">
+                              📍 {r.node_hint}
+                            </span>
+                          )}
+                          <span className="ml-auto">{r.created_at?.slice(11, 19)}</span>
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        {text ? (
+                          <div className="text-slate-100 text-base">&ldquo;{text}&rdquo;</div>
+                        ) : (
+                          <div className="text-slate-500 italic">(user tapped a category without typing)</div>
+                        )}
+                        {showCanonical && (
+                          <div className="text-xs text-slate-500 italic mt-1">
+                            → normalized: {canonical}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
 

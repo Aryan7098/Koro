@@ -8,6 +8,7 @@ import AccessibilityDrawer from '../../components/AccessibilityDrawer';
 import CategoryGrid from '../../components/CategoryGrid';
 import NudgeCard from '../../components/NudgeCard';
 import MediaAttach from '../../components/MediaAttach';
+import { label as categoryLabel } from '../../lib/categories';
 import {
   ActiveEvent,
   FanNudge,
@@ -126,9 +127,12 @@ export default function FanPage() {
     if (!deviceFp && !me) return;
     setPending(true);
     setAck(null);
+    // Always ship SOMETHING for staff to read. If the fan didn't type, use
+    // the localized category label so the staff view isn't "(no text)".
+    const effectiveText = text.trim() || categoryLabel(categoryId, lang);
     try {
       const r = await submitFanReport({
-        text: text || undefined,
+        text: effectiveText,
         language: lang,
         category: categoryId,
         node_hint: nodeHint || undefined,
@@ -192,22 +196,26 @@ export default function FanPage() {
         transition={{ duration: 0.3 }}
         className="mb-5 rounded-2xl border border-slate-700 bg-slate-900/60 p-4 shadow-lg"
       >
-        <label htmlFor="report-text" className="block text-sm font-medium text-slate-200 mb-2">
-          What&apos;s happening?
+        <label htmlFor="report-text" className="block text-sm font-medium text-slate-200 mb-2 flex items-center gap-2">
+          <span>What&apos;s happening?</span>
+          <span className="text-xs text-emerald-400 font-normal">
+            (a sentence helps staff understand faster)
+          </span>
         </label>
         <textarea
           id="report-text"
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={3}
-          placeholder="Describe it in any language — spill outside the restroom, long line at Gate C, someone needs help..."
+          placeholder="Describe it in your language — 'huge spill outside restroom 112', 'long queue at Gate C', 'person collapsed near Section 324'…"
           className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition placeholder:text-slate-600"
         />
         <div className="mt-3 flex items-center justify-between flex-wrap gap-3">
           <MediaAttach attached={mediaIds} onChange={setMediaIds} />
           <div className="text-xs text-slate-500">
-            {text.length > 0 && `${text.length} chars · `}
-            tap a category below to send
+            {text.length > 0
+              ? `${text.length} characters`
+              : 'or just tap a category — the label will be sent as text'}
           </div>
         </div>
       </motion.section>

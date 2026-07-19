@@ -93,25 +93,9 @@ export default function Home() {
           ))}
         </div>
 
-        <motion.section
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-          className="p-5 rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur mb-8"
-        >
-          <div className="text-sm font-semibold mb-2 text-emerald-300">Fastest way to see the loop</div>
-          <ol className="list-decimal ml-5 text-sm text-slate-300 space-y-1.5">
-            <li>Open <Link href="/fan" className="text-emerald-400 underline">/fan</Link> in one tab, pick a language flag top-right.</li>
-            <li>Open <Link href="/staff" className="text-emerald-400 underline">/staff</Link> in another tab as <code className="text-slate-100 bg-slate-800 px-1 rounded">Ops Control</code>.</li>
-            <li>Open <Link href="/control" className="text-emerald-400 underline">/control</Link> as <code className="text-slate-100 bg-slate-800 px-1 rounded">Match Organizer</code> and run <code className="text-slate-100 bg-slate-800 px-1 rounded">demo_full_narrative</code>.</li>
-            <li>Watch the rumor → probable → confirmed progression, the multilingual nudges, the wheelchair-safe reroute, and the safety-critical event landing in the Authorize queue.</li>
-          </ol>
-        </motion.section>
-
         <div className="text-xs text-slate-500 flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          Live · Languages: EN · ES · FR · AR · PT · KO ·{' '}
-          <span className="text-slate-600">v1 · all 13 milestones landed</span>
+          Live · Languages: EN · ES · FR · AR · PT · KO
         </div>
       </div>
     </main>
