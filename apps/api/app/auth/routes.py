@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.jwt import create_token, current_user
 from app.core.db import get_session
+from app.ingress.rate_limit import check_and_bump
 from app.models import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -38,8 +39,14 @@ class LoginResponse(BaseModel):
 @router.post("/login", response_model=LoginResponse)
 async def login(
     body: LoginBody,
+    request: Request,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> LoginResponse:
+    # Rate-limit login attempts per source IP so the passwordless role picker
+    # cannot be brute-force enumerated to discover valid seeded usernames.
+    client_ip = (request.client.host if request.client else "unknown") or "unknown"
+    await check_and_bump(f"login:{client_ip}", limit=10)
+
     stmt = select(User).where(User.username == body.username)
     user = (await session.execute(stmt)).scalar_one_or_none()
     if not user:

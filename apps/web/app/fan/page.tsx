@@ -191,7 +191,7 @@ export default function FanPage() {
         transition={{ duration: 0.3 }}
         className="mb-5 rounded-2xl card-glass p-4 shadow-lg"
       >
-        <label htmlFor="report-text" className="block text-sm font-medium text-slate-200 mb-2 flex items-center gap-2">
+        <label htmlFor="report-text" className="flex items-center gap-2 text-sm font-medium text-slate-200 mb-2">
           <span>What&apos;s happening?</span>
           <span className="text-xs text-emerald-400 font-normal">
             (a sentence helps staff understand faster)
@@ -276,20 +276,21 @@ export default function FanPage() {
         </AnimatePresence>
       </section>
 
-      <section>
-        <div className="text-xs text-slate-400 mb-2 uppercase tracking-wider">Live guidance</div>
+      <section aria-labelledby="live-guidance-heading">
+        <h2 id="live-guidance-heading" className="text-xs text-slate-400 mb-2 uppercase tracking-wider">Live guidance</h2>
         {nudges.length === 0 && (
           <div className="text-sm text-slate-500 italic">
             Nothing yet. When something happens near you, guidance appears here in your language.
           </div>
         )}
-        <div className="space-y-3">
+        <div className="space-y-3" role="log" aria-live="polite" aria-relevant="additions">
           <AnimatePresence initial={false}>
             {nudges.map((n, i) => {
               const openAtNode = active.find((e) => e.id === n.nudge.event_id);
               return (
                 <motion.div
                   key={`${n.nudge.event_id}-${n.at}`}
+                  lang={n.nudge.lang || lang}
                   layout
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
