@@ -13,6 +13,8 @@ import {
   VenueNode,
   approveAuth,
   denyAuth,
+  dismissEvent,
+  dispatchEvent,
   eventLineage,
   logout,
   me as fetchMe,
@@ -126,7 +128,24 @@ export default function StaffPage() {
     const reason = window.prompt('Resolution note (optional):', 'complete');
     try {
       await resolveEvent(eventId, reason || undefined);
-      setFlash({ kind: 'ok', msg: 'Resolved.' });
+      setFlash({ kind: 'ok', msg: 'Resolved — reporters notified in their languages.' });
+      refresh();
+    } catch (e: any) { setFlash({ kind: 'err', msg: e.message }); }
+  }
+  async function onDispatch(eventId: string) {
+    const reason = window.prompt('Dispatch note (optional):', '');
+    try {
+      await dispatchEvent(eventId, reason || undefined);
+      setFlash({ kind: 'ok', msg: 'Dispatched — volunteers + fan nudges fired.' });
+      refresh();
+    } catch (e: any) { setFlash({ kind: 'err', msg: e.message }); }
+  }
+  async function onDismiss(eventId: string) {
+    const reason = window.prompt('Why dismiss? (required)', '');
+    if (!reason) return;
+    try {
+      await dismissEvent(eventId, reason);
+      setFlash({ kind: 'ok', msg: 'Dismissed.' });
       refresh();
     } catch (e: any) { setFlash({ kind: 'err', msg: e.message }); }
   }
@@ -210,7 +229,15 @@ export default function StaffPage() {
       </AnimatePresence>
 
       {tab === 'queue' && (
-        <QueueList events={queue} onDrill={setDrilling} nodesById={nodesById} lineage={lineageCache} />
+        <QueueList
+          events={queue}
+          onDrill={setDrilling}
+          nodesById={nodesById}
+          lineage={lineageCache}
+          onDispatch={onDispatch}
+          onDismiss={onDismiss}
+          onResolve={onResolve}
+        />
       )}
       {tab === 'authorize' && (
         <AuthorizeList
@@ -237,33 +264,52 @@ function Reporters({ lineage }: { lineage: EventLineage | undefined }) {
   if (!lineage) return null;
   const reports = lineage.reports || [];
   if (!reports.length) return null;
-  const names: string[] = [];
+
+  // Attribution summary
   const anonCount = reports.filter((r) => r.source === 'fan' && !r.source_user_id).length;
-  for (const r of reports) {
-    if (r.source === 'fan' && r.source_user_id) {
-      names.push('a known fan');
-    } else if (r.source === 'volunteer') {
-      names.push('a volunteer');
-    } else if (r.source === 'staff') {
-      names.push('a staff member');
-    }
-  }
-  const unique = Array.from(new Set(names));
+  const knownFans = reports.filter((r) => r.source === 'fan' && r.source_user_id).length;
+  const volunteers = reports.filter((r) => r.source === 'volunteer').length;
+  const staffCount = reports.filter((r) => r.source === 'staff').length;
   const parts: string[] = [];
-  if (anonCount > 0) parts.push(`${anonCount} anonymous fan${anonCount > 1 ? 's' : ''}`);
-  parts.push(...unique);
+  if (anonCount) parts.push(`${anonCount} anonymous fan${anonCount > 1 ? 's' : ''}`);
+  if (knownFans) parts.push(`${knownFans} known fan${knownFans > 1 ? 's' : ''}`);
+  if (volunteers) parts.push(`${volunteers} volunteer${volunteers > 1 ? 's' : ''}`);
+  if (staffCount) parts.push(`${staffCount} staff`);
   const langs = Array.from(new Set(reports.map((r) => r.raw_language).filter(Boolean))) as string[];
+
+  // Show up to 3 distinct raw texts as prominent quotes
+  const texts: { text: string; lang: string | null }[] = [];
+  for (const r of reports) {
+    const t = r.raw_text || r.category_hint;
+    if (!t) continue;
+    if (texts.some((x) => x.text.toLowerCase() === t.toLowerCase())) continue;
+    texts.push({ text: t, lang: r.raw_language });
+    if (texts.length >= 3) break;
+  }
+
   return (
-    <div className="text-xs text-slate-400 mt-2 space-y-1">
-      <div>👥 Reported by: {parts.join(', ')}</div>
-      {langs.length > 0 && (
-        <div>🌐 Languages: {langs.join(', ').toUpperCase()}</div>
-      )}
-      {reports[0]?.raw_text && (
-        <div className="italic text-slate-500 truncate max-w-full">
-          &ldquo;{reports[0].raw_text}&rdquo;
+    <div className="mt-3 space-y-2">
+      {texts.length > 0 && (
+        <div className="space-y-1.5">
+          {texts.map((t, i) => (
+            <div
+              key={i}
+              className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-sm text-slate-100"
+            >
+              {t.lang && (
+                <span className="mr-2 text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 uppercase align-middle">
+                  {t.lang}
+                </span>
+              )}
+              <span className="italic">&ldquo;{t.text}&rdquo;</span>
+            </div>
+          ))}
         </div>
       )}
+      <div className="text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
+        <span>👥 {parts.join(', ')}</span>
+        {langs.length > 0 && <span>🌐 {langs.join(', ').toUpperCase()}</span>}
+      </div>
     </div>
   );
 }
@@ -323,17 +369,44 @@ function EventRow({
 }
 
 function QueueList({
-  events, onDrill, nodesById, lineage,
+  events, onDrill, nodesById, lineage, onDispatch, onDismiss, onResolve,
 }: {
   events: StaffEvent[]; onDrill: (id: string) => void;
   nodesById: Map<string, VenueNode>; lineage: Record<string, EventLineage>;
+  onDispatch: (id: string) => void;
+  onDismiss: (id: string) => void;
+  onResolve: (id: string) => void;
 }) {
   if (!events.length) return <div className="text-sm text-slate-500 mt-6">Nothing in the queue.</div>;
   return (
     <div className="space-y-3">
       <AnimatePresence initial={false}>
         {events.map((e) => (
-          <EventRow key={e.id} event={e} onDrill={onDrill} nodesById={nodesById} lineage={lineage} />
+          <EventRow key={e.id} event={e} onDrill={onDrill} nodesById={nodesById} lineage={lineage}>
+            {e.status !== 'dispatched' && (
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => onDispatch(e.id)}
+                className="text-xs px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-600 text-white font-medium"
+              >
+                🚀 Dispatch
+              </motion.button>
+            )}
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onResolve(e.id)}
+              className="text-xs px-2.5 py-1 rounded bg-sky-700 hover:bg-sky-600 text-white font-medium"
+            >
+              ✓ Resolve
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onDismiss(e.id)}
+              className="text-xs px-2.5 py-1 rounded bg-red-900/70 hover:bg-red-800/80 text-white"
+            >
+              ✕ Dismiss
+            </motion.button>
+          </EventRow>
         ))}
       </AnimatePresence>
     </div>

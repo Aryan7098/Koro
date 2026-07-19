@@ -284,6 +284,112 @@ async def deny_authorization(
     return {"auth_id": str(auth.id), "status": auth.status}
 
 
+@router.post("/events/{event_id}/dispatch")
+async def dispatch_event(
+    event_id: uuid.UUID,
+    body: DecisionBody,
+    user: Annotated[User, Depends(require_role("staff", "organizer"))],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> dict:
+    """Staff takes ownership of a task from the Queue tab. Marks the event
+    DISPATCHED, logs the action, and fires the render pipeline as if the
+    action gate had emitted DISPATCH_STAFF (so volunteers + fans get scripts
+    + nudges from this moment)."""
+    event = (
+        await session.execute(select(CanonicalEvent).where(CanonicalEvent.id == event_id))
+    ).scalar_one_or_none()
+    if event is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "event not found")
+    if event.status == EventStatus.RESOLVED.value:
+        raise HTTPException(status.HTTP_409_CONFLICT, "already resolved")
+    if event.status == EventStatus.DISMISSED.value:
+        raise HTTPException(status.HTTP_409_CONFLICT, "already dismissed")
+
+    prior = event.status
+    event.status = EventStatus.DISPATCHED.value
+
+    session.add(
+        ResolutionLedger(
+            id=uuid.uuid4(),
+            event_id=event.id,
+            action=LedgerAction.DISPATCHED.value,
+            actor_user_id=user.id,
+            payload={"via": "manual_staff_dispatch", "prior_status": prior,
+                     "reason": body.reason},
+        )
+    )
+
+    fake_gate = GateResult(
+        decision=Decision.DISPATCH_STAFF,
+        reasoning=f"manually dispatched by {user.username}",
+        proposed_action={"kind": "dispatch", "priority": "medium"},
+        next_status=EventStatus.DISPATCHED.value,
+    )
+    try:
+        from app.rendering.dispatch import dispatch_render
+
+        await dispatch_render(session, event, fake_gate)
+    except Exception as e:  # pragma: no cover
+        session.add(
+            ResolutionLedger(
+                id=uuid.uuid4(),
+                event_id=event.id,
+                action=LedgerAction.DISPATCHED.value,
+                notes=f"render dispatch failed: {e}",
+            )
+        )
+
+    await session.commit()
+    return {"event_id": str(event.id), "status": event.status,
+            "dispatched_by": user.username}
+
+
+@router.post("/events/{event_id}/dismiss")
+async def dismiss_event(
+    event_id: uuid.UUID,
+    body: DecisionBody,
+    user: Annotated[User, Depends(require_role("staff", "organizer"))],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> dict:
+    """Staff dismisses an event as noise (false alarm, spam, duplicate).
+    Marks it DISMISSED and closes any pending authorizations."""
+    event = (
+        await session.execute(select(CanonicalEvent).where(CanonicalEvent.id == event_id))
+    ).scalar_one_or_none()
+    if event is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "event not found")
+    if event.status == EventStatus.RESOLVED.value:
+        raise HTTPException(status.HTTP_409_CONFLICT, "already resolved")
+
+    event.status = EventStatus.DISMISSED.value
+
+    pending = (
+        await session.execute(
+            select(PendingAuthorization).where(
+                PendingAuthorization.event_id == event_id,
+                PendingAuthorization.status == AuthStatus.PENDING.value,
+            )
+        )
+    ).scalars().all()
+    for p in pending:
+        p.status = AuthStatus.DENIED.value
+        p.decided_by = user.id
+        p.decision_reason = "auto-closed on event dismissal"
+        p.decided_at = datetime.now(UTC)
+
+    session.add(
+        ResolutionLedger(
+            id=uuid.uuid4(),
+            event_id=event.id,
+            action=LedgerAction.GATE_DECISION.value,
+            actor_user_id=user.id,
+            payload={"decision": "manual_dismiss", "reason": body.reason},
+        )
+    )
+    await session.commit()
+    return {"event_id": str(event.id), "status": event.status}
+
+
 @router.post("/events/{event_id}/resolve")
 async def resolve_event(
     event_id: uuid.UUID,

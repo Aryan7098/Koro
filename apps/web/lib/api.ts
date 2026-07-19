@@ -312,6 +312,20 @@ export async function resolveEvent(eventId: string, reason?: string) {
   });
 }
 
+export async function dispatchEvent(eventId: string, reason?: string) {
+  return req(`/staff/events/${eventId}/dispatch`, {
+    method: 'POST',
+    body: JSON.stringify({ reason: reason || null }),
+  });
+}
+
+export async function dismissEvent(eventId: string, reason?: string) {
+  return req(`/staff/events/${eventId}/dismiss`, {
+    method: 'POST',
+    body: JSON.stringify({ reason: reason || null }),
+  });
+}
+
 export async function eventLineage(eventId: string): Promise<EventLineage> {
   return req(`/events/${eventId}/lineage`);
 }
