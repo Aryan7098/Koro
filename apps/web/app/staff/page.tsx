@@ -1,15 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import StaffLogin from '../../components/StaffLogin';
 import EvidencePanel from '../../components/EvidencePanel';
 import {
+  EventLineage,
   Me,
   PendingAuth,
   StaffEvent,
+  VenueNode,
   approveAuth,
   denyAuth,
+  eventLineage,
   logout,
   me as fetchMe,
   resolveEvent,
@@ -17,14 +21,15 @@ import {
   staffEventSource,
   staffQueue,
   staffResolveQueue,
+  venueGraph,
 } from '../../lib/api';
 
 type Tab = 'queue' | 'authorize' | 'resolve';
 
 const SEV_COLOR: Record<string, string> = {
-  CRITICAL: 'bg-red-700/40 text-red-200 border-red-500',
-  HIGH: 'bg-orange-700/40 text-orange-200 border-orange-500',
-  MED: 'bg-yellow-700/40 text-yellow-200 border-yellow-600',
+  CRITICAL: 'bg-red-700/50 text-red-100 border-red-500',
+  HIGH: 'bg-orange-700/50 text-orange-100 border-orange-500',
+  MED: 'bg-yellow-700/40 text-yellow-100 border-yellow-600',
   LOW: 'bg-slate-700/40 text-slate-300 border-slate-600',
 };
 
@@ -34,6 +39,16 @@ const BAND_COLOR: Record<string, string> = {
   RUMOR: 'bg-slate-700/40 text-slate-300',
 };
 
+// Small in-memory cache of lineage results per event, so we can show a
+// "reporters" line without the drill-down modal.
+async function fetchReporters(eventId: string): Promise<EventLineage | null> {
+  try {
+    return await eventLineage(eventId);
+  } catch {
+    return null;
+  }
+}
+
 export default function StaffPage() {
   const [me, setMe] = useState<Me | null>(null);
   const [tab, setTab] = useState<Tab>('queue');
@@ -42,6 +57,10 @@ export default function StaffPage() {
   const [resolveable, setResolveable] = useState<StaffEvent[]>([]);
   const [drilling, setDrilling] = useState<string | null>(null);
   const [flash, setFlash] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
+  const [nodes, setNodes] = useState<VenueNode[]>([]);
+  const [lineageCache, setLineageCache] = useState<Record<string, EventLineage>>({});
+
+  const nodesById = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
 
   const refresh = useCallback(async () => {
     try {
@@ -49,15 +68,29 @@ export default function StaffPage() {
       setQueue(q);
       setAuths(a);
       setResolveable(r);
+      // Warm the lineage cache for all visible events so the reporter names show
+      const ids = new Set<string>();
+      q.forEach((e) => ids.add(e.id));
+      a.forEach((x) => ids.add(x.event.id));
+      r.forEach((e) => ids.add(e.id));
+      const missing = [...ids].filter((id) => !lineageCache[id]);
+      if (missing.length) {
+        const results = await Promise.all(missing.map(fetchReporters));
+        setLineageCache((cur) => {
+          const next = { ...cur };
+          missing.forEach((id, i) => { if (results[i]) next[id] = results[i]!; });
+          return next;
+        });
+      }
     } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     fetchMe().then((u) => {
-      if (u && (u.role === 'staff' || u.role === 'organizer')) {
-        setMe(u);
-      }
+      if (u && (u.role === 'staff' || u.role === 'organizer')) setMe(u);
     });
+    venueGraph().then((g) => setNodes(g.nodes)).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -78,9 +111,7 @@ export default function StaffPage() {
       await approveAuth(authId, reason || undefined);
       setFlash({ kind: 'ok', msg: 'Approved — dispatch fired.' });
       refresh();
-    } catch (e: any) {
-      setFlash({ kind: 'err', msg: e.message });
-    }
+    } catch (e: any) { setFlash({ kind: 'err', msg: e.message }); }
   }
   async function onDeny(authId: string) {
     const reason = window.prompt('Why are you denying? (required)', '');
@@ -89,9 +120,7 @@ export default function StaffPage() {
       await denyAuth(authId, reason);
       setFlash({ kind: 'ok', msg: 'Denied and dismissed.' });
       refresh();
-    } catch (e: any) {
-      setFlash({ kind: 'err', msg: e.message });
-    }
+    } catch (e: any) { setFlash({ kind: 'err', msg: e.message }); }
   }
   async function onResolve(eventId: string) {
     const reason = window.prompt('Resolution note (optional):', 'complete');
@@ -99,17 +128,13 @@ export default function StaffPage() {
       await resolveEvent(eventId, reason || undefined);
       setFlash({ kind: 'ok', msg: 'Resolved.' });
       refresh();
-    } catch (e: any) {
-      setFlash({ kind: 'err', msg: e.message });
-    }
+    } catch (e: any) { setFlash({ kind: 'err', msg: e.message }); }
   }
 
   if (!me) {
     return (
-      <main className="min-h-screen p-6">
-        <Link href="/" className="text-xs text-slate-500 hover:text-slate-300">
-          ← back
-        </Link>
+      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
+        <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400">← back</Link>
         <StaffLogin onLogin={setMe} role="staff" />
       </main>
     );
@@ -119,23 +144,20 @@ export default function StaffPage() {
   const criticalCount = auths.filter((a) => a.event.severity === 'CRITICAL').length;
 
   return (
-    <main className="min-h-screen p-4 sm:p-6 max-w-5xl mx-auto">
+    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-6 max-w-5xl mx-auto">
       <header className="flex items-center justify-between mb-4">
         <div>
-          <Link href="/" className="text-xs text-slate-500 hover:text-slate-300">
-            ← back
-          </Link>
-          <h1 className="text-2xl font-bold">Staff</h1>
+          <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400 transition">← back</Link>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-300 to-red-400 bg-clip-text text-transparent">
+            Staff
+          </h1>
           <div className="text-xs text-slate-500 mt-0.5">
             {me.display_name} · owns{' '}
             {me.category_ownership?.length ? me.category_ownership.join(', ') : 'all categories'}
           </div>
         </div>
         <button
-          onClick={() => {
-            logout();
-            setMe(null);
-          }}
+          onClick={() => { logout(); setMe(null); }}
           className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-slate-500"
         >
           Sign out
@@ -151,40 +173,44 @@ export default function StaffPage() {
               key={t}
               onClick={() => setTab(t)}
               className={`px-4 py-2 text-sm capitalize border-b-2 -mb-px transition ${
-                active
-                  ? 'border-emerald-500 text-white'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                active ? 'border-emerald-500 text-white' : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
             >
               {t}
               {badge > 0 && (
-                <span
+                <motion.span
+                  layout
                   className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-full ${
                     t === 'authorize' && criticalCount > 0
-                      ? 'bg-red-600 text-white'
+                      ? 'bg-red-600 text-white animate-pulse'
                       : 'bg-slate-700 text-slate-300'
                   }`}
                 >
                   {badge}
-                </span>
+                </motion.span>
               )}
             </button>
           );
         })}
       </nav>
 
-      {flash && (
-        <div
-          className={`mb-3 p-2 text-xs rounded ${
-            flash.kind === 'ok' ? 'bg-emerald-900/40 text-emerald-200' : 'bg-red-900/40 text-red-200'
-          }`}
-        >
-          {flash.msg}
-        </div>
-      )}
+      <AnimatePresence>
+        {flash && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className={`mb-3 p-2 text-xs rounded ${
+              flash.kind === 'ok' ? 'bg-emerald-900/40 text-emerald-200' : 'bg-red-900/40 text-red-200'
+            }`}
+          >
+            {flash.msg}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {tab === 'queue' && (
-        <QueueList events={queue} onDrill={setDrilling} />
+        <QueueList events={queue} onDrill={setDrilling} nodesById={nodesById} lineage={lineageCache} />
       )}
       {tab === 'authorize' && (
         <AuthorizeList
@@ -192,10 +218,12 @@ export default function StaffPage() {
           onApprove={onApprove}
           onDeny={onDeny}
           onDrill={setDrilling}
+          nodesById={nodesById}
+          lineage={lineageCache}
         />
       )}
       {tab === 'resolve' && (
-        <ResolveList events={resolveable} onResolve={onResolve} onDrill={setDrilling} />
+        <ResolveList events={resolveable} onResolve={onResolve} onDrill={setDrilling} nodesById={nodesById} lineage={lineageCache} />
       )}
 
       {drilling && <EvidencePanel eventId={drilling} onClose={() => setDrilling(null)} />}
@@ -203,173 +231,234 @@ export default function StaffPage() {
   );
 }
 
-// ---------- sub-components -----------------------------------------------
+// ---------- sub-components ------------------------------------------------
 
-function EventRow({
-  event,
-  children,
-  onDrill,
-}: {
-  event: StaffEvent;
-  children?: React.ReactNode;
-  onDrill: (id: string) => void;
-}) {
+function Reporters({ lineage }: { lineage: EventLineage | undefined }) {
+  if (!lineage) return null;
+  const reports = lineage.reports || [];
+  if (!reports.length) return null;
+  const names: string[] = [];
+  const anonCount = reports.filter((r) => r.source === 'fan' && !r.source_user_id).length;
+  for (const r of reports) {
+    if (r.source === 'fan' && r.source_user_id) {
+      names.push('a known fan');
+    } else if (r.source === 'volunteer') {
+      names.push('a volunteer');
+    } else if (r.source === 'staff') {
+      names.push('a staff member');
+    }
+  }
+  const unique = Array.from(new Set(names));
+  const parts: string[] = [];
+  if (anonCount > 0) parts.push(`${anonCount} anonymous fan${anonCount > 1 ? 's' : ''}`);
+  parts.push(...unique);
+  const langs = Array.from(new Set(reports.map((r) => r.raw_language).filter(Boolean))) as string[];
   return (
-    <div className="p-4 rounded border border-slate-800 bg-slate-900/40">
-      <div className="flex items-baseline gap-2 mb-2 flex-wrap text-xs">
-        <span className={`px-1.5 py-0.5 rounded border ${SEV_COLOR[event.severity] || ''}`}>
-          {event.severity}
-        </span>
-        <span className={`px-1.5 py-0.5 rounded ${BAND_COLOR[event.confidence_band] || ''}`}>
-          {event.confidence_band}
-        </span>
-        <span className="text-slate-400">{event.category}</span>
-        <span className="text-slate-500">· {event.node_id}</span>
-        <span className="ml-auto text-slate-500">
-          {event.distinct_observers.toLocaleString()} observer(s) ·
-          score {event.confidence_score.toFixed(1)}
-        </span>
-      </div>
-      <div className="text-sm">{event.canonical_summary || <i className="text-slate-500">no summary yet</i>}</div>
-      <div className="mt-2 flex gap-2 flex-wrap">
-        <button
-          onClick={() => onDrill(event.id)}
-          className="text-xs px-2 py-1 rounded border border-slate-700 hover:border-slate-500"
-        >
-          view evidence
-        </button>
-        {children}
-      </div>
+    <div className="text-xs text-slate-400 mt-2 space-y-1">
+      <div>👥 Reported by: {parts.join(', ')}</div>
+      {langs.length > 0 && (
+        <div>🌐 Languages: {langs.join(', ').toUpperCase()}</div>
+      )}
+      {reports[0]?.raw_text && (
+        <div className="italic text-slate-500 truncate max-w-full">
+          &ldquo;{reports[0].raw_text}&rdquo;
+        </div>
+      )}
     </div>
   );
 }
 
-function QueueList({
-  events,
-  onDrill,
+function LocationLine({ nodeId, nodesById }: { nodeId: string; nodesById: Map<string, VenueNode> }) {
+  const node = nodesById.get(nodeId);
+  if (!node) return <span>{nodeId}</span>;
+  return (
+    <span>
+      📍 <span className="text-slate-200 font-medium">{node.name}</span>
+      <span className="text-slate-500"> · {node.type} · level {node.level}</span>
+    </span>
+  );
+}
+
+function EventRow({
+  event, children, onDrill, nodesById, lineage,
 }: {
-  events: StaffEvent[];
+  event: StaffEvent;
+  children?: React.ReactNode;
   onDrill: (id: string) => void;
+  nodesById: Map<string, VenueNode>;
+  lineage: Record<string, EventLineage>;
 }) {
-  if (!events.length) {
-    return <div className="text-sm text-slate-500 mt-6">Nothing in the queue.</div>;
-  }
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      className="p-4 rounded-xl border border-slate-800 bg-slate-900/40 hover:border-slate-700 transition"
+    >
+      <div className="flex items-baseline gap-2 mb-2 flex-wrap text-xs">
+        <span className={`px-1.5 py-0.5 rounded border ${SEV_COLOR[event.severity] || ''}`}>{event.severity}</span>
+        <span className={`px-1.5 py-0.5 rounded ${BAND_COLOR[event.confidence_band] || ''}`}>{event.confidence_band}</span>
+        <span className="text-slate-400 uppercase tracking-wider">{event.category}</span>
+        <span className="ml-auto text-slate-500">
+          {event.distinct_observers.toLocaleString()} observer(s) · score {event.confidence_score.toFixed(1)}
+        </span>
+      </div>
+      <div className="text-sm text-slate-400 mb-2">
+        <LocationLine nodeId={event.node_id} nodesById={nodesById} />
+      </div>
+      <div className="text-sm">{event.canonical_summary || <i className="text-slate-500">no summary yet</i>}</div>
+      <Reporters lineage={lineage[event.id]} />
+      <div className="mt-3 flex gap-2 flex-wrap">
+        <button
+          onClick={() => onDrill(event.id)}
+          className="text-xs px-2 py-1 rounded border border-slate-700 hover:border-emerald-500 hover:text-emerald-300 transition"
+        >
+          view full evidence
+        </button>
+        {children}
+      </div>
+    </motion.div>
+  );
+}
+
+function QueueList({
+  events, onDrill, nodesById, lineage,
+}: {
+  events: StaffEvent[]; onDrill: (id: string) => void;
+  nodesById: Map<string, VenueNode>; lineage: Record<string, EventLineage>;
+}) {
+  if (!events.length) return <div className="text-sm text-slate-500 mt-6">Nothing in the queue.</div>;
   return (
     <div className="space-y-3">
-      {events.map((e) => (
-        <EventRow key={e.id} event={e} onDrill={onDrill} />
-      ))}
+      <AnimatePresence initial={false}>
+        {events.map((e) => (
+          <EventRow key={e.id} event={e} onDrill={onDrill} nodesById={nodesById} lineage={lineage} />
+        ))}
+      </AnimatePresence>
     </div>
   );
 }
 
 function AuthorizeList({
-  auths,
-  onApprove,
-  onDeny,
-  onDrill,
+  auths, onApprove, onDeny, onDrill, nodesById, lineage,
 }: {
-  auths: PendingAuth[];
-  onApprove: (id: string) => void;
-  onDeny: (id: string) => void;
-  onDrill: (id: string) => void;
+  auths: PendingAuth[]; onApprove: (id: string) => void; onDeny: (id: string) => void;
+  onDrill: (id: string) => void; nodesById: Map<string, VenueNode>;
+  lineage: Record<string, EventLineage>;
 }) {
   if (!auths.length) {
     return (
-      <div className="text-sm text-slate-500 mt-6">
-        No pending authorizations. Safety-critical events auto-surface here even at Rumor
-        confidence.
+      <div className="text-sm text-slate-500 mt-6 italic">
+        No pending authorizations. Safety-critical events auto-surface here even at Rumor confidence.
       </div>
     );
   }
   return (
     <div className="space-y-3">
-      {auths.map((a) => (
-        <div
-          key={a.auth_id}
-          className={`rounded border-2 ${
-            a.event.severity === 'CRITICAL'
-              ? 'border-red-600 bg-red-950/20'
-              : a.event.severity === 'HIGH'
-                ? 'border-orange-600 bg-orange-950/20'
-                : 'border-slate-700 bg-slate-900/40'
-          } p-4`}
-        >
-          <div className="flex items-baseline gap-2 mb-2 flex-wrap text-xs">
-            <span className={`px-1.5 py-0.5 rounded border ${SEV_COLOR[a.event.severity] || ''}`}>
-              {a.event.severity}
-            </span>
-            <span className={`px-1.5 py-0.5 rounded ${BAND_COLOR[a.event.confidence_band] || ''}`}>
-              {a.event.confidence_band}
-            </span>
-            <span className="text-slate-400">{a.event.category}</span>
-            <span className="text-slate-500">· {a.event.node_id}</span>
-            <span className="ml-auto text-slate-500">
-              proposed: {String((a.proposed_action as any)?.kind || 'action')}
-            </span>
-          </div>
-          <div className="text-sm mb-2">
-            {a.event.canonical_summary || <i className="text-slate-500">no summary</i>}
-          </div>
-          {a.event.severity_reason && (
-            <div className="text-xs text-slate-400 italic mb-3">
-              severity reasoning: {a.event.severity_reason}
+      <AnimatePresence initial={false}>
+        {auths.map((a) => (
+          <motion.div
+            key={a.auth_id}
+            layout
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className={`rounded-xl border-2 ${
+              a.event.severity === 'CRITICAL'
+                ? 'border-red-600 bg-red-950/20 shadow-lg shadow-red-900/30'
+                : a.event.severity === 'HIGH'
+                  ? 'border-orange-600 bg-orange-950/20'
+                  : 'border-slate-700 bg-slate-900/40'
+            } p-4 relative overflow-hidden`}
+          >
+            {a.event.severity === 'CRITICAL' && (
+              <motion.div
+                className="absolute inset-0 bg-red-500/10 pointer-events-none"
+                animate={{ opacity: [0.05, 0.2, 0.05] }}
+                transition={{ duration: 1.6, repeat: Infinity }}
+              />
+            )}
+            <div className="relative">
+              <div className="flex items-baseline gap-2 mb-2 flex-wrap text-xs">
+                <span className={`px-1.5 py-0.5 rounded border ${SEV_COLOR[a.event.severity] || ''}`}>
+                  {a.event.severity}
+                </span>
+                <span className={`px-1.5 py-0.5 rounded ${BAND_COLOR[a.event.confidence_band] || ''}`}>
+                  {a.event.confidence_band}
+                </span>
+                <span className="text-slate-400 uppercase tracking-wider">{a.event.category}</span>
+                <span className="ml-auto text-slate-500">
+                  proposed: {String((a.proposed_action as any)?.kind || 'action')}
+                </span>
+              </div>
+              <div className="text-sm text-slate-400 mb-2">
+                <LocationLine nodeId={a.event.node_id} nodesById={nodesById} />
+              </div>
+              <div className="text-sm mb-2">
+                {a.event.canonical_summary || <i className="text-slate-500">no summary</i>}
+              </div>
+              {a.event.severity_reason && (
+                <div className="text-xs text-slate-400 italic mb-3">
+                  💭 severity reasoning: {a.event.severity_reason}
+                </div>
+              )}
+              <Reporters lineage={lineage[a.event.id]} />
+              <div className="text-xs text-slate-500 mt-3">
+                Source mix: {JSON.stringify(a.event.source_mix)}
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => onApprove(a.auth_id)}
+                  className="text-sm px-3 py-1.5 rounded bg-emerald-700 hover:bg-emerald-600 text-white"
+                >
+                  ✓ Approve → dispatch
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => onDeny(a.auth_id)}
+                  className="text-sm px-3 py-1.5 rounded bg-red-800/60 hover:bg-red-700/60 text-white"
+                >
+                  ✕ Deny / dismiss
+                </motion.button>
+                <button
+                  onClick={() => onDrill(a.event.id)}
+                  className="text-sm px-3 py-1.5 rounded border border-slate-700 hover:border-emerald-500 hover:text-emerald-300"
+                >
+                  View evidence
+                </button>
+              </div>
             </div>
-          )}
-          <div className="text-xs text-slate-500 mb-3">
-            {a.event.distinct_observers.toLocaleString()} observer(s) ·
-            source mix: {JSON.stringify(a.event.source_mix)}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => onApprove(a.auth_id)}
-              className="text-sm px-3 py-1.5 rounded bg-emerald-700 hover:bg-emerald-600 text-white"
-            >
-              Approve → dispatch
-            </button>
-            <button
-              onClick={() => onDeny(a.auth_id)}
-              className="text-sm px-3 py-1.5 rounded bg-red-800/60 hover:bg-red-700/60 text-white"
-            >
-              Deny / dismiss
-            </button>
-            <button
-              onClick={() => onDrill(a.event.id)}
-              className="text-sm px-3 py-1.5 rounded border border-slate-700 hover:border-slate-500"
-            >
-              View evidence
-            </button>
-          </div>
-        </div>
-      ))}
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }
 
 function ResolveList({
-  events,
-  onResolve,
-  onDrill,
+  events, onResolve, onDrill, nodesById, lineage,
 }: {
-  events: StaffEvent[];
-  onResolve: (id: string) => void;
-  onDrill: (id: string) => void;
+  events: StaffEvent[]; onResolve: (id: string) => void; onDrill: (id: string) => void;
+  nodesById: Map<string, VenueNode>; lineage: Record<string, EventLineage>;
 }) {
-  if (!events.length) {
-    return <div className="text-sm text-slate-500 mt-6">Nothing awaiting resolution.</div>;
-  }
+  if (!events.length) return <div className="text-sm text-slate-500 mt-6">Nothing awaiting resolution.</div>;
   return (
     <div className="space-y-3">
-      {events.map((e) => (
-        <EventRow key={e.id} event={e} onDrill={onDrill}>
-          <button
-            onClick={() => onResolve(e.id)}
-            className="text-xs px-2 py-1 rounded bg-emerald-700 hover:bg-emerald-600 text-white"
-          >
-            Mark resolved
-          </button>
-        </EventRow>
-      ))}
+      <AnimatePresence initial={false}>
+        {events.map((e) => (
+          <EventRow key={e.id} event={e} onDrill={onDrill} nodesById={nodesById} lineage={lineage}>
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onResolve(e.id)}
+              className="text-xs px-2 py-1 rounded bg-emerald-700 hover:bg-emerald-600 text-white"
+            >
+              ✓ Mark resolved
+            </motion.button>
+          </EventRow>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }

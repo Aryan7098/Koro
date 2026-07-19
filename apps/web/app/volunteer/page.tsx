@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import StaffLogin from '../../components/StaffLogin';
 import EvidencePanel from '../../components/EvidencePanel';
 import {
@@ -95,23 +96,21 @@ export default function VolunteerPage() {
 
   if (!me) {
     return (
-      <main className="min-h-screen p-6">
-        <Link href="/" className="text-xs text-slate-500 hover:text-slate-300">
-          ← back
-        </Link>
+      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
+        <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400">← back</Link>
         <StaffLogin onLogin={setMe} role="volunteer" />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen p-4 sm:p-6 max-w-4xl mx-auto">
+    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-6 max-w-4xl mx-auto">
       <header className="flex items-center justify-between mb-4">
         <div>
-          <Link href="/" className="text-xs text-slate-500 hover:text-slate-300">
-            ← back
-          </Link>
-          <h1 className="text-2xl font-bold">Volunteer</h1>
+          <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400 transition">← back</Link>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-300 to-teal-400 bg-clip-text text-transparent">
+            Volunteer
+          </h1>
           <div className="text-xs text-slate-500 mt-0.5">
             {me.display_name} · {me.zone ? `zone: ${me.zone}` : 'all zones'}
           </div>
