@@ -520,17 +520,62 @@ function ResolveList({
   return (
     <div className="space-y-3">
       <AnimatePresence initial={false}>
-        {events.map((e) => (
-          <EventRow key={e.id} event={e} onDrill={onDrill} nodesById={nodesById} lineage={lineage}>
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => onResolve(e.id)}
-              className="text-xs px-2 py-1 rounded bg-emerald-700 hover:bg-emerald-600 text-white"
-            >
-              ✓ Mark resolved
-            </motion.button>
-          </EventRow>
-        ))}
+        {events.map((e) => {
+          // A completion Report is a volunteer/staff report with confirm_value='complete'
+          const completions = (lineage[e.id]?.reports || []).filter(
+            (r) => r.confirm_value === 'complete'
+          );
+          const hasEvidence = completions.length > 0;
+          return (
+            <EventRow key={e.id} event={e} onDrill={onDrill} nodesById={nodesById} lineage={lineage}>
+              {hasEvidence ? (
+                <div className="w-full mt-2">
+                  <div className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-700/60 space-y-1">
+                    <div className="text-xs text-emerald-300 font-medium">
+                      ✓ Volunteer submitted completion evidence ({completions.length})
+                    </div>
+                    {completions.slice(0, 2).map((c) => (
+                      <div key={c.id} className="text-sm text-slate-100 italic">
+                        &ldquo;{c.raw_text}&rdquo;
+                        <span className="text-xs text-slate-500 not-italic ml-2">
+                          · {c.created_at?.slice(11, 19)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex gap-2 flex-wrap">
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => onResolve(e.id)}
+                      className="text-sm px-3 py-1.5 rounded bg-emerald-700 hover:bg-emerald-600 text-white font-medium"
+                    >
+                      ✓ Verify &amp; notify fans
+                    </motion.button>
+                    <span className="text-xs text-slate-500 self-center">
+                      → sends per-language "fixed, thanks" to every reporter
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full mt-2">
+                  <div className="p-2.5 rounded-lg bg-slate-950/40 border border-amber-800/40 text-xs text-amber-300">
+                    ⏳ Waiting for volunteer to submit completion evidence before you can notify fans.
+                  </div>
+                  <div className="mt-3 flex gap-2 flex-wrap">
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => onResolve(e.id)}
+                      className="text-xs px-2.5 py-1.5 rounded border border-slate-700 text-slate-300 hover:border-emerald-500 hover:text-emerald-300"
+                      title="Skip volunteer evidence and resolve manually (staff override)"
+                    >
+                      resolve without evidence
+                    </motion.button>
+                  </div>
+                </div>
+              )}
+            </EventRow>
+          );
+        })}
       </AnimatePresence>
     </div>
   );

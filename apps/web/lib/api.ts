@@ -338,11 +338,23 @@ export type VolunteerTask = {
   category: string;
   severity: string;
   confidence_band: string;
+  status: string;
   canonical_summary: string | null;
   distinct_observers: number;
   source_mix: Record<string, unknown>;
   first_seen: string | null;
   last_seen: string | null;
+  completion: {
+    count: number;
+    latest_text: string | null;
+    latest_at: string | null;
+    media_ids: string[];
+  } | null;
+};
+
+export type VolunteerTasksResponse = {
+  verify: VolunteerTask[];
+  active: VolunteerTask[];
 };
 
 export type VolunteerScript = {
@@ -358,8 +370,18 @@ export type VolunteerScript = {
   at?: string;
 };
 
-export async function volunteerTasks(): Promise<VolunteerTask[]> {
+export async function volunteerTasks(): Promise<VolunteerTasksResponse> {
   return req('/volunteer/tasks');
+}
+
+export async function volunteerComplete(
+  eventId: string,
+  body: { text: string; media_ids?: string[] }
+): Promise<{ report_id: string; event_id: string; status: string; message: string }> {
+  return req(`/volunteer/events/${eventId}/complete`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
 }
 
 export async function volunteerScripts(): Promise<VolunteerScript[]> {
