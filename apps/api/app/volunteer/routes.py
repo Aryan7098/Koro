@@ -63,6 +63,38 @@ async def verify_tasks(
     verify_events = (await session.execute(verify_stmt)).scalars().all()
     active_events = (await session.execute(active_stmt)).scalars().all()
 
+    # For every event on either list, fetch up to 3 most recent fan/volunteer
+    # reports so the volunteer surface can show what people actually said (in
+    # their own languages) — the canonical_summary is often empty or bland.
+    all_ids = [e.id for e in verify_events] + [e.id for e in active_events]
+    reports_by_event: dict[str, list[dict]] = {}
+    if all_ids:
+        # Join event_reports → reports, ordered by report time desc.
+        from app.models import EventReport
+        link_stmt = (
+            select(EventReport.event_id, Report)
+            .join(Report, Report.id == EventReport.report_id)
+            .where(EventReport.event_id.in_(all_ids))
+            .order_by(desc(Report.created_at))
+        )
+        for event_id, r in (await session.execute(link_stmt)).all():
+            key = str(event_id)
+            bucket = reports_by_event.setdefault(key, [])
+            if len(bucket) >= 3:
+                continue
+            # Prefer raw_text; fall back to category_hint so we never show empty.
+            text = (r.raw_text or r.category_hint or "").strip()
+            if not text:
+                continue
+            bucket.append(
+                {
+                    "text": text,
+                    "language": r.raw_language,
+                    "source": r.source,
+                    "at": r.created_at.isoformat() if r.created_at else None,
+                }
+            )
+
     active_ids = [e.id for e in active_events]
     completion_map: dict[str, dict] = {}
     if active_ids:
@@ -103,6 +135,7 @@ async def verify_tasks(
             "first_seen": e.first_seen.isoformat() if e.first_seen else None,
             "last_seen": e.last_seen.isoformat() if e.last_seen else None,
             "completion": completion_map.get(str(e.id)),
+            "recent_reports": reports_by_event.get(str(e.id), []),
         }
 
     return {

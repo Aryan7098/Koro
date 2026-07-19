@@ -350,6 +350,12 @@ export type VolunteerTask = {
     latest_at: string | null;
     media_ids: string[];
   } | null;
+  recent_reports: Array<{
+    text: string;
+    language: string | null;
+    source: string;
+    at: string | null;
+  }>;
 };
 
 export type VolunteerTasksResponse = {

@@ -286,11 +286,34 @@ function ActiveTaskCard({
       <div className="text-sm text-slate-400 mb-2">
         <LocationLine nodeId={task.node_id} nodesById={nodesById} />
       </div>
-      <div className="text-sm text-slate-100 mb-2">
-        {task.canonical_summary || <i className="text-slate-500">no summary</i>}
-      </div>
+      {task.recent_reports && task.recent_reports.length > 0 ? (
+        <div className="mb-3">
+          <div className="text-[10px] uppercase tracking-wider text-emerald-300/70 mb-1.5">
+            What fans reported
+          </div>
+          <div className="space-y-1.5">
+            {task.recent_reports.map((r, i) => (
+              <div
+                key={i}
+                className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-sm text-slate-100"
+              >
+                {r.language && (
+                  <span className="mr-2 text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 uppercase align-middle">
+                    {r.language}
+                  </span>
+                )}
+                <span className="italic">&ldquo;{r.text}&rdquo;</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="text-sm text-slate-100 mb-3">
+          {task.canonical_summary || <i className="text-slate-500">no summary</i>}
+        </div>
+      )}
       <div className="text-xs text-slate-400 mb-3">
-        👥 {task.distinct_observers.toLocaleString()} fans flagged this
+        👥 {task.distinct_observers.toLocaleString()} fan report{task.distinct_observers === 1 ? '' : 's'}
       </div>
 
       {alreadySubmitted ? (
@@ -351,11 +374,15 @@ function VerifyCard({
   onDeny: (id: string) => void;
   onDrill: (id: string) => void;
 }) {
+  const reports = task.recent_reports || [];
+  const langs = Array.from(new Set(reports.map((r) => r.language).filter(Boolean))) as string[];
+
   return (
     <motion.div
       layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
       className="p-4 rounded-xl border border-slate-800 bg-slate-900/40"
     >
+      {/* Chip row */}
       <div className="flex items-baseline gap-2 mb-2 flex-wrap text-xs">
         <span className={`px-1.5 py-0.5 rounded border ${SEV_COLOR[task.severity] || ''}`}>
           {task.severity}
@@ -365,35 +392,70 @@ function VerifyCard({
         </span>
         <span className="text-slate-400 uppercase tracking-wider">{task.category}</span>
         <span className="ml-auto text-slate-500">
-          {task.distinct_observers.toLocaleString()} observer(s)
+          {task.distinct_observers.toLocaleString()} fan report{task.distinct_observers === 1 ? '' : 's'}
+          {langs.length > 0 && ` · ${langs.join('/').toUpperCase()}`}
         </span>
       </div>
-      <div className="text-sm text-slate-400 mb-2">
+
+      {/* Location */}
+      <div className="text-sm text-slate-400 mb-3">
         <LocationLine nodeId={task.node_id} nodesById={nodesById} />
       </div>
-      <div className="text-sm mb-3">
-        {task.canonical_summary || <i className="text-slate-500">no summary yet</i>}
+
+      {/* THE QUEUE — what fans actually said, in their own languages */}
+      <div className="mb-3">
+        <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">
+          What fans reported ({reports.length})
+        </div>
+        {reports.length === 0 ? (
+          <div className="text-sm text-slate-500 italic">
+            (fans tapped this category without typing a description)
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {reports.map((r, i) => (
+              <div
+                key={i}
+                className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-sm text-slate-100"
+              >
+                {r.language && (
+                  <span className="mr-2 text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 uppercase align-middle">
+                    {r.language}
+                  </span>
+                )}
+                <span className="italic">&ldquo;{r.text}&rdquo;</span>
+                {r.at && (
+                  <span className="ml-2 text-[10px] text-slate-500 not-italic">
+                    · {r.at.slice(11, 19)}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Actions */}
       <div className="flex gap-2 flex-wrap">
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => onConfirm(task.id)}
           className="text-sm px-3 py-1.5 rounded bg-emerald-700 hover:bg-emerald-600 text-white"
         >
-          ✓ Confirm
+          ✓ Confirm — I see it
         </motion.button>
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => onDeny(task.id)}
           className="text-sm px-3 py-1.5 rounded bg-red-800/60 hover:bg-red-700/60 text-white"
         >
-          ✗ Deny
+          ✗ Deny — nothing here
         </motion.button>
         <button
           onClick={() => onDrill(task.id)}
           className="text-sm px-3 py-1.5 rounded border border-slate-700 hover:border-slate-500"
         >
-          view raw reports
+          full timeline
         </button>
       </div>
     </motion.div>
