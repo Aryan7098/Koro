@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { PublicStats, publicStats } from '../lib/api';
+import { RadioIcon } from './icons';
 
-// Marquee-style live ticker under the landing hero. Numbers count up on
-// change; the whole strip scrolls slowly so it feels alive even when the
-// underlying stats are static.
+// Stadium-scoreboard ticker under the landing hero. Bebas Neue numerals,
+// a faint LED scanline drifting over the strip, numbers counting up on
+// change, and the whole band scrolling like a perimeter advertising board.
+// Hovering pauses the scroll (CSS) so values can actually be read.
 
 function useAnimatedNumber(target: number, durationMs = 800): number {
   const [value, setValue] = useState(target);
@@ -30,8 +32,8 @@ function useAnimatedNumber(target: number, durationMs = 800): number {
 function Stat({ label, value, suffix }: { label: string; value: number; suffix?: string }) {
   const n = useAnimatedNumber(value);
   return (
-    <span className="inline-flex items-baseline gap-1.5 mx-6 whitespace-nowrap">
-      <span className="text-emerald-300 font-bold tabular-nums text-base">
+    <span className="inline-flex items-baseline gap-2 mx-6 whitespace-nowrap">
+      <span className="font-scoreboard text-emerald-300 tabular-nums text-2xl leading-none animate-led-flicker">
         {n.toLocaleString()}
         {suffix}
       </span>
@@ -71,17 +73,17 @@ export default function StatsTicker() {
   const strip = (
     <>
       <Stat label="reports fused (24h)" value={s.reports_seen_24h} />
-      <span className="text-slate-700">·</span>
+      <span className="text-emerald-900">●</span>
       <Stat label="canonical events" value={s.events_seen_24h} />
-      <span className="text-slate-700">·</span>
+      <span className="text-emerald-900">●</span>
       <Stat label="resolved" value={s.events_resolved_24h} />
-      <span className="text-slate-700">·</span>
+      <span className="text-emerald-900">●</span>
       <Stat label="open right now" value={s.events_open_now} />
-      <span className="text-slate-700">·</span>
+      <span className="text-emerald-900">●</span>
       <Stat label="languages seen" value={s.languages_seen_24h} />
-      <span className="text-slate-700">·</span>
+      <span className="text-emerald-900">●</span>
       <span className="inline-flex items-center gap-2 mx-6 whitespace-nowrap text-emerald-300">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        <RadioIcon size={15} className="text-emerald-400" />
         <span className="text-xs uppercase tracking-widest">live</span>
       </span>
     </>
@@ -92,11 +94,31 @@ export default function StatsTicker() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
-      className="relative overflow-hidden py-3 border-y border-slate-800/60 bg-slate-950/40 backdrop-blur"
+      className="relative overflow-hidden py-3.5 border-y border-emerald-500/20 bg-night-900/70 backdrop-blur"
     >
-      <div className="flex animate-marquee w-max">
+      {/* LED grid texture */}
+      <div
+        className="absolute inset-0 opacity-[0.15] pointer-events-none"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle, rgba(52, 211, 153, 0.5) 1px, transparent 1px)',
+          backgroundSize: '6px 6px',
+        }}
+      />
+      {/* Drifting scanline */}
+      <div
+        className="absolute left-0 right-0 h-8 animate-scanline pointer-events-none"
+        style={{
+          background:
+            'linear-gradient(180deg, transparent, rgba(52, 211, 153, 0.08), transparent)',
+        }}
+      />
+      <div className="relative flex animate-marquee w-max">
         {strip}
-        {strip}
+        {/* Second copy makes the loop seamless — hidden from screen readers */}
+        <div className="contents" aria-hidden="true">
+          {strip}
+        </div>
       </div>
     </motion.div>
   );

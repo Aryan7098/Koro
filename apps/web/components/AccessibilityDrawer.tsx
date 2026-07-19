@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Me, patchMe } from '../lib/api';
+import { AccessibilityIcon, HeadsetIcon } from './icons';
 
 type Props = {
   me: Me | null;
@@ -48,7 +49,7 @@ export default function AccessibilityDrawer({ me, onUpdate }: Props) {
           mob ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-700 hover:border-slate-500'
         }`}
       >
-        <div className="text-lg">♿</div>
+        <AccessibilityIcon size={20} className={mob ? 'text-emerald-300' : 'text-slate-400'} />
         <div className="text-sm font-medium mt-1">Mobility</div>
         <div className="text-xs text-slate-500">step-free routes only</div>
       </button>
@@ -59,7 +60,7 @@ export default function AccessibilityDrawer({ me, onUpdate }: Props) {
           sen ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-700 hover:border-slate-500'
         }`}
       >
-        <div className="text-lg">🎧</div>
+        <HeadsetIcon size={20} className={sen ? 'text-emerald-300' : 'text-slate-400'} />
         <div className="text-sm font-medium mt-1">Sensory</div>
         <div className="text-xs text-slate-500">low-stimulus routes</div>
       </button>

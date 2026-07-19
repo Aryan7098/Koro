@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { uploadMedia } from '../lib/api';
+import { CameraIcon } from './icons';
 
 type Props = {
   attached: string[];
@@ -32,11 +33,17 @@ export default function MediaAttach({ attached, onChange }: Props) {
   return (
     <div className="flex items-center gap-3 text-xs">
       <label
-        className={`px-3 py-1.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer ${
+        className={`px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500 cursor-pointer transition inline-flex items-center gap-1.5 ${
           busy ? 'opacity-50' : ''
         }`}
       >
-        {busy ? 'uploading…' : '📷 attach photo'}
+        {busy ? (
+          'uploading…'
+        ) : (
+          <>
+            <CameraIcon size={14} /> attach photo
+          </>
+        )}
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp"

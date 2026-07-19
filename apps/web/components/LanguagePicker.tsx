@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Me, login, logout } from '../lib/api';
+import { AccessibilityIcon, HeadsetIcon } from './icons';
 
 // Language → seeded fan mapping. To the user this is just "pick a language".
 // The backing user carries language + accessibility metadata used by the
@@ -84,8 +85,12 @@ export default function LanguagePicker({ me, currentLang, onChange }: Props) {
         <span className="text-lg">{current.flag}</span>
         <span className="hidden sm:inline">{current.nativeName}</span>
         {current.accessibilityNote && (
-          <span className="text-xs text-emerald-400">
-            {current.accessibilityNote === 'wheelchair' ? '♿' : '🎧'}
+          <span className="text-emerald-400">
+            {current.accessibilityNote === 'wheelchair' ? (
+              <AccessibilityIcon size={14} />
+            ) : (
+              <HeadsetIcon size={14} />
+            )}
           </span>
         )}
       </motion.button>

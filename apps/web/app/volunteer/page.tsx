@@ -6,6 +6,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import StaffLogin from '../../components/StaffLogin';
 import EvidencePanel from '../../components/EvidencePanel';
 import MediaAttach from '../../components/MediaAttach';
+import PageBackdrop from '../../components/PageBackdrop';
+import RoleHeader from '../../components/RoleHeader';
+import {
+  ArrowLeftIcon,
+  CheckIcon,
+  MapPinIcon,
+  SendIcon,
+  UsersIcon,
+  XIcon,
+} from '../../components/icons';
 import {
   Me,
   VenueNode,
@@ -109,32 +119,32 @@ export default function VolunteerPage() {
 
   if (!me) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
-        <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400">← back</Link>
+      <main className="min-h-screen p-6">
+        <PageBackdrop accent="emerald" />
+        <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-emerald-300 transition">
+          <ArrowLeftIcon size={14} /> matchday home
+        </Link>
         <StaffLogin onLogin={setMe} role="volunteer" />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-6 max-w-4xl mx-auto">
-      <header className="flex items-center justify-between mb-4">
-        <div>
-          <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400 transition">← back</Link>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-300 to-teal-400 bg-clip-text text-transparent">
-            Volunteer
-          </h1>
-          <div className="text-xs text-slate-500 mt-0.5">
-            {me.display_name} · {me.zone ? `zone: ${me.zone}` : 'all zones'}
-          </div>
-        </div>
-        <button
-          onClick={() => { logout(); setMe(null); }}
-          className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-slate-500"
-        >
-          Sign out
-        </button>
-      </header>
+    <main className="min-h-screen p-4 sm:p-6 max-w-4xl mx-auto">
+      <PageBackdrop accent="emerald" />
+      <RoleHeader
+        title="Volunteer"
+        gradient="from-emerald-300 to-teal-400"
+        subtitle={`${me.display_name} · ${me.zone ? `zone: ${me.zone}` : 'all zones'}`}
+        right={
+          <button
+            onClick={() => { logout(); setMe(null); }}
+            className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-slate-500 transition cursor-pointer"
+          >
+            Sign out
+          </button>
+        }
+      />
 
       <AnimatePresence>
         {flash && (
@@ -234,8 +244,9 @@ function LocationLine({ nodeId, nodesById }: { nodeId: string; nodesById: Map<st
   const node = nodesById.get(nodeId);
   if (!node) return <span>{nodeId}</span>;
   return (
-    <span>
-      📍 <span className="text-slate-200 font-medium">{node.name}</span>
+    <span className="inline-flex items-center gap-1.5">
+      <MapPinIcon size={14} className="text-emerald-400/80 shrink-0" />
+      <span className="text-slate-200 font-medium">{node.name}</span>
       <span className="text-slate-500"> · level {node.level}</span>
     </span>
   );
@@ -279,8 +290,8 @@ function ActiveTaskCard({
           {task.confidence_band}
         </span>
         <span className="text-slate-400 uppercase tracking-wider">{task.category}</span>
-        <span className="ml-auto text-emerald-300 text-[10px] uppercase tracking-wider font-medium">
-          🚀 DISPATCHED — Take action
+        <span className="ml-auto text-emerald-300 text-[10px] uppercase tracking-wider font-medium inline-flex items-center gap-1">
+          <SendIcon size={12} /> DISPATCHED — Take action
         </span>
       </div>
       <div className="text-sm text-slate-400 mb-2">
@@ -312,14 +323,16 @@ function ActiveTaskCard({
           {task.canonical_summary || <i className="text-slate-500">no summary</i>}
         </div>
       )}
-      <div className="text-xs text-slate-400 mb-3">
-        👥 {task.distinct_observers.toLocaleString()} fan report{task.distinct_observers === 1 ? '' : 's'}
+      <div className="text-xs text-slate-400 mb-3 inline-flex items-center gap-1.5">
+        <UsersIcon size={14} className="text-slate-500" />
+        {task.distinct_observers.toLocaleString()} fan report{task.distinct_observers === 1 ? '' : 's'}
       </div>
 
       {alreadySubmitted ? (
         <div className="p-3 rounded-lg bg-slate-950/60 border border-emerald-700/40">
-          <div className="text-xs text-emerald-300 mb-1">
-            ✓ Completion evidence already submitted ({task.completion!.count})
+          <div className="text-xs text-emerald-300 mb-1 inline-flex items-center gap-1.5">
+            <CheckIcon size={13} />
+            Completion evidence already submitted ({task.completion!.count})
           </div>
           <div className="text-sm text-slate-200 italic">
             &ldquo;{task.completion!.latest_text}&rdquo;
@@ -348,9 +361,9 @@ function ActiveTaskCard({
               whileTap={{ scale: 0.97 }}
               onClick={submit}
               disabled={busy || text.trim().length < 5}
-              className="text-sm px-3 py-1.5 rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white font-medium"
+              className="text-sm px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white font-medium inline-flex items-center gap-1.5 cursor-pointer transition"
             >
-              ✓ Submit — task complete
+              <CheckIcon size={15} /> Submit — task complete
             </motion.button>
             <button
               onClick={() => onDrill(task.id)}
@@ -440,16 +453,16 @@ function VerifyCard({
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => onConfirm(task.id)}
-          className="text-sm px-3 py-1.5 rounded bg-emerald-700 hover:bg-emerald-600 text-white"
+          className="text-sm px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white inline-flex items-center gap-1.5 cursor-pointer transition"
         >
-          ✓ Confirm — I see it
+          <CheckIcon size={15} /> Confirm — I see it
         </motion.button>
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => onDeny(task.id)}
-          className="text-sm px-3 py-1.5 rounded bg-red-800/60 hover:bg-red-700/60 text-white"
+          className="text-sm px-3 py-1.5 rounded-lg bg-red-800/60 hover:bg-red-700/60 text-white inline-flex items-center gap-1.5 cursor-pointer transition"
         >
-          ✗ Deny — nothing here
+          <XIcon size={15} /> Deny — nothing here
         </motion.button>
         <button
           onClick={() => onDrill(task.id)}

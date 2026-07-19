@@ -6,6 +6,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import StaffLogin from '../../components/StaffLogin';
 import EvidencePanel from '../../components/EvidencePanel';
 import Confetti from '../../components/Confetti';
+import PageBackdrop from '../../components/PageBackdrop';
+import RoleHeader from '../../components/RoleHeader';
+import {
+  ArrowLeftIcon,
+  CheckIcon,
+  ClockIcon,
+  GlobeIcon,
+  MapPinIcon,
+  SendIcon,
+  UsersIcon,
+  XIcon,
+} from '../../components/icons';
 import {
   EventLineage,
   Me,
@@ -130,7 +142,7 @@ export default function StaffPage() {
     const reason = window.prompt('Resolution note (optional):', 'complete');
     try {
       await resolveEvent(eventId, reason || undefined);
-      setFlash({ kind: 'ok', msg: '✓ Resolved — reporters notified in their languages.' });
+      setFlash({ kind: 'ok', msg: 'Resolved — reporters notified in their languages.' });
       setConfettiTrigger(Date.now());
       refresh();
     } catch (e: any) { setFlash({ kind: 'err', msg: e.message }); }
@@ -155,8 +167,11 @@ export default function StaffPage() {
 
   if (!me) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
-        <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400">← back</Link>
+      <main className="min-h-screen p-6">
+        <PageBackdrop accent="amber" />
+        <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-emerald-300 transition">
+          <ArrowLeftIcon size={14} /> matchday home
+        </Link>
         <StaffLogin onLogin={setMe} role="staff" />
       </main>
     );
@@ -166,25 +181,26 @@ export default function StaffPage() {
   const criticalCount = auths.filter((a) => a.event.severity === 'CRITICAL').length;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-6 max-w-5xl mx-auto">
-      <header className="flex items-center justify-between mb-4">
-        <div>
-          <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400 transition">← back</Link>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-300 to-red-400 bg-clip-text text-transparent">
-            Staff
-          </h1>
-          <div className="text-xs text-slate-500 mt-0.5">
+    <main className="min-h-screen p-4 sm:p-6 max-w-5xl mx-auto">
+      <PageBackdrop accent="amber" />
+      <RoleHeader
+        title="Staff"
+        gradient="from-amber-300 to-red-400"
+        subtitle={
+          <>
             {me.display_name} · owns{' '}
             {me.category_ownership?.length ? me.category_ownership.join(', ') : 'all categories'}
-          </div>
-        </div>
-        <button
-          onClick={() => { logout(); setMe(null); }}
-          className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-slate-500"
-        >
-          Sign out
-        </button>
-      </header>
+          </>
+        }
+        right={
+          <button
+            onClick={() => { logout(); setMe(null); }}
+            className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-slate-500 transition cursor-pointer"
+          >
+            Sign out
+          </button>
+        }
+      />
 
       <nav className="flex gap-1 mb-4 border-b border-slate-800">
         {(['queue', 'authorize', 'resolve'] as Tab[]).map((t) => {
@@ -311,8 +327,16 @@ function Reporters({ lineage }: { lineage: EventLineage | undefined }) {
         </div>
       )}
       <div className="text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
-        <span>👥 {parts.join(', ')}</span>
-        {langs.length > 0 && <span>🌐 {langs.join(', ').toUpperCase()}</span>}
+        <span className="inline-flex items-center gap-1.5">
+          <UsersIcon size={13} className="text-slate-500" />
+          {parts.join(', ')}
+        </span>
+        {langs.length > 0 && (
+          <span className="inline-flex items-center gap-1.5">
+            <GlobeIcon size={13} className="text-slate-500" />
+            {langs.join(', ').toUpperCase()}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -322,8 +346,9 @@ function LocationLine({ nodeId, nodesById }: { nodeId: string; nodesById: Map<st
   const node = nodesById.get(nodeId);
   if (!node) return <span>{nodeId}</span>;
   return (
-    <span>
-      📍 <span className="text-slate-200 font-medium">{node.name}</span>
+    <span className="inline-flex items-center gap-1.5">
+      <MapPinIcon size={14} className="text-amber-400/80 shrink-0" />
+      <span className="text-slate-200 font-medium">{node.name}</span>
       <span className="text-slate-500"> · {node.type} · level {node.level}</span>
     </span>
   );
@@ -391,24 +416,24 @@ function QueueList({
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => onDispatch(e.id)}
-                className="text-xs px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-600 text-white font-medium"
+                className="text-xs px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-medium inline-flex items-center gap-1.5 cursor-pointer transition"
               >
-                🚀 Dispatch
+                <SendIcon size={12} /> Dispatch
               </motion.button>
             )}
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => onResolve(e.id)}
-              className="text-xs px-2.5 py-1 rounded bg-sky-700 hover:bg-sky-600 text-white font-medium"
+              className="text-xs px-2.5 py-1 rounded-lg bg-sky-700 hover:bg-sky-600 text-white font-medium inline-flex items-center gap-1.5 cursor-pointer transition"
             >
-              ✓ Resolve
+              <CheckIcon size={12} /> Resolve
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => onDismiss(e.id)}
-              className="text-xs px-2.5 py-1 rounded bg-red-900/70 hover:bg-red-800/80 text-white"
+              className="text-xs px-2.5 py-1 rounded-lg bg-red-900/70 hover:bg-red-800/80 text-white inline-flex items-center gap-1.5 cursor-pointer transition"
             >
-              ✕ Dismiss
+              <XIcon size={12} /> Dismiss
             </motion.button>
           </EventRow>
         ))}
@@ -477,7 +502,7 @@ function AuthorizeList({
               </div>
               {a.event.severity_reason && (
                 <div className="text-xs text-slate-400 italic mb-3">
-                  💭 severity reasoning: {a.event.severity_reason}
+                  severity reasoning: {a.event.severity_reason}
                 </div>
               )}
               <Reporters lineage={lineage[a.event.id]} />
@@ -488,16 +513,16 @@ function AuthorizeList({
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={() => onApprove(a.auth_id)}
-                  className="text-sm px-3 py-1.5 rounded bg-emerald-700 hover:bg-emerald-600 text-white"
+                  className="text-sm px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white inline-flex items-center gap-1.5 cursor-pointer transition"
                 >
-                  ✓ Approve → dispatch
+                  <CheckIcon size={15} /> Approve → dispatch
                 </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={() => onDeny(a.auth_id)}
-                  className="text-sm px-3 py-1.5 rounded bg-red-800/60 hover:bg-red-700/60 text-white"
+                  className="text-sm px-3 py-1.5 rounded-lg bg-red-800/60 hover:bg-red-700/60 text-white inline-flex items-center gap-1.5 cursor-pointer transition"
                 >
-                  ✕ Deny / dismiss
+                  <XIcon size={15} /> Deny / dismiss
                 </motion.button>
                 <button
                   onClick={() => onDrill(a.event.id)}
@@ -535,8 +560,9 @@ function ResolveList({
               {hasEvidence ? (
                 <div className="w-full mt-2">
                   <div className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-700/60 space-y-1">
-                    <div className="text-xs text-emerald-300 font-medium">
-                      ✓ Volunteer submitted completion evidence ({completions.length})
+                    <div className="text-xs text-emerald-300 font-medium inline-flex items-center gap-1.5">
+                      <CheckIcon size={13} />
+                      Volunteer submitted completion evidence ({completions.length})
                     </div>
                     {completions.slice(0, 2).map((c) => (
                       <div key={c.id} className="text-sm text-slate-100 italic">
@@ -551,9 +577,9 @@ function ResolveList({
                     <motion.button
                       whileTap={{ scale: 0.97 }}
                       onClick={() => onResolve(e.id)}
-                      className="text-sm px-3 py-1.5 rounded bg-emerald-700 hover:bg-emerald-600 text-white font-medium"
+                      className="text-sm px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-medium inline-flex items-center gap-1.5 cursor-pointer transition"
                     >
-                      ✓ Verify &amp; notify fans
+                      <CheckIcon size={15} /> Verify &amp; notify fans
                     </motion.button>
                     <span className="text-xs text-slate-500 self-center">
                       → sends per-language "fixed, thanks" to every reporter
@@ -562,8 +588,9 @@ function ResolveList({
                 </div>
               ) : (
                 <div className="w-full mt-2">
-                  <div className="p-2.5 rounded-lg bg-slate-950/40 border border-amber-800/40 text-xs text-amber-300">
-                    ⏳ Waiting for volunteer to submit completion evidence before you can notify fans.
+                  <div className="p-2.5 rounded-lg bg-slate-950/40 border border-amber-800/40 text-xs text-amber-300 flex items-center gap-1.5">
+                    <ClockIcon size={13} className="shrink-0" />
+                    Waiting for volunteer to submit completion evidence before you can notify fans.
                   </div>
                   <div className="mt-3 flex gap-2 flex-wrap">
                     <motion.button

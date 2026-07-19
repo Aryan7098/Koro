@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import LanguagePicker from '../../components/LanguagePicker';
 import AccessibilityDrawer from '../../components/AccessibilityDrawer';
 import CategoryGrid from '../../components/CategoryGrid';
 import NudgeCard from '../../components/NudgeCard';
 import MediaAttach from '../../components/MediaAttach';
+import PageBackdrop from '../../components/PageBackdrop';
+import RoleHeader from '../../components/RoleHeader';
+import { CheckIcon, UsersIcon } from '../../components/icons';
 import { label as categoryLabel } from '../../lib/categories';
 import {
   ActiveEvent,
@@ -95,7 +97,7 @@ export default function FanPage() {
                   band: 'CONFIRMED',
                   node_id: parsed.data.node_id || '',
                   lang: parsed.data.lang || 'en',
-                  headline: parsed.data.headline || '✓ Resolved',
+                  headline: parsed.data.headline || 'Resolved',
                   body: parsed.data.body || 'Fixed. Thanks for reporting.',
                 },
                 at: Date.now(),
@@ -173,28 +175,21 @@ export default function FanPage() {
   const activeAtSelected = nodeHint ? active.find((e) => e.node_id === nodeHint) : undefined;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-6 max-w-3xl mx-auto">
-      <header className="flex items-start justify-between mb-6">
-        <div>
-          <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400 transition">
-            ← back
-          </Link>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-300 to-sky-400 bg-clip-text text-transparent">
-            Fan
-          </h1>
-          <div className="text-xs text-slate-500 mt-0.5">
-            MetLife Stadium · anonymous session
-          </div>
-        </div>
-        <LanguagePicker me={me} currentLang={lang} onChange={onLangChange} />
-      </header>
+    <main className="min-h-screen p-4 sm:p-6 max-w-3xl mx-auto">
+      <PageBackdrop accent="sky" />
+      <RoleHeader
+        title="Fan"
+        gradient="from-sky-300 to-cyan-400"
+        subtitle="MetLife Stadium · anonymous session"
+        right={<LanguagePicker me={me} currentLang={lang} onChange={onLangChange} />}
+      />
 
       {/* THE STAR — big text input at the top */}
       <motion.section
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="mb-5 rounded-2xl border border-slate-700 bg-slate-900/60 p-4 shadow-lg"
+        className="mb-5 rounded-2xl card-glass p-4 shadow-lg"
       >
         <label htmlFor="report-text" className="block text-sm font-medium text-slate-200 mb-2 flex items-center gap-2">
           <span>What&apos;s happening?</span>
@@ -249,11 +244,14 @@ export default function FanPage() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mb-3 p-3 rounded-lg bg-amber-950/40 border border-amber-800/60 text-xs text-amber-300"
+            className="mb-3 p-3 rounded-lg bg-amber-950/40 border border-amber-800/60 text-xs text-amber-300 flex items-start gap-2"
           >
-            💡 {activeAtSelected.distinct_observers.toLocaleString()} people already flagged something
-            at this spot ({activeAtSelected.category}, {activeAtSelected.confidence_band}). Adding
-            yours strengthens the signal.
+            <UsersIcon size={15} className="mt-0.5 shrink-0" />
+            <span>
+              {activeAtSelected.distinct_observers.toLocaleString()} people already flagged something
+              at this spot ({activeAtSelected.category}, {activeAtSelected.confidence_band}). Adding
+              yours strengthens the signal.
+            </span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -269,9 +267,10 @@ export default function FanPage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
-              className="mt-4 p-3 bg-emerald-950/40 border border-emerald-700/50 rounded-lg text-sm"
+              className="mt-4 p-3 bg-emerald-950/40 border border-emerald-700/50 rounded-lg text-sm flex items-center gap-2 text-emerald-200"
             >
-              ✓ {ack}
+              <CheckIcon size={16} className="text-emerald-400 shrink-0" />
+              {ack}
             </motion.div>
           )}
         </AnimatePresence>

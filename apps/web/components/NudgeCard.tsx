@@ -1,6 +1,7 @@
 'use client';
 
 import { FanNudge, VenueNode } from '../lib/api';
+import { ArrowRightIcon, CheckIcon } from './icons';
 
 const BAND_COLOR: Record<string, string> = {
   RUMOR: 'bg-slate-700 text-slate-300',
@@ -35,8 +36,8 @@ export default function NudgeCard({
   const ageSec = Math.max(0, Math.floor((Date.now() - arrivedAt) / 1000));
 
   const containerClass = resolved
-    ? 'p-4 rounded-lg border border-emerald-700 bg-emerald-950/30'
-    : 'p-4 rounded-lg border border-slate-700 bg-slate-900/40';
+    ? 'p-4 rounded-xl border border-emerald-700 bg-emerald-950/30 shadow-glow'
+    : 'p-4 rounded-xl border border-slate-700 card-glass';
 
   return (
     <div className={containerClass}>
@@ -70,14 +71,14 @@ export default function NudgeCard({
           {ageSec < 60 ? `${ageSec}s ago` : `${Math.floor(ageSec / 60)}m ago`}
         </span>
       </div>
-      <div className="font-semibold text-base">
-        {resolved ? '✓ ' : ''}
+      <div className="font-semibold text-base flex items-center gap-1.5">
+        {resolved && <CheckIcon size={16} className="text-emerald-400 shrink-0" />}
         {nudge.headline}
       </div>
       <div className="text-sm text-slate-300 mt-1 leading-relaxed">{nudge.body}</div>
       {nudge.action_hint && (
-        <div className="text-sm text-emerald-400 mt-2 flex items-start gap-1">
-          <span>→</span>
+        <div className="text-sm text-emerald-400 mt-2 flex items-start gap-1.5">
+          <ArrowRightIcon size={15} className="mt-0.5 shrink-0" />
           <span>
             {nudge.action_hint}
             {nextNodeName && <span className="text-slate-400"> ({nextNodeName})</span>}

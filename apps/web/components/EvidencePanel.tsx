@@ -1,7 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { EventLineage, eventLineage } from '../lib/api';
+import BallLoader from './BallLoader';
+import {
+  ChatIcon,
+  CheckIcon,
+  GlobeIcon,
+  LockIcon,
+  MapPinIcon,
+  RadarIcon,
+  SendIcon,
+  ShieldIcon,
+  XIcon,
+  ZapIcon,
+} from './icons';
 
 type Props = {
   eventId: string;
@@ -18,19 +32,46 @@ export default function EvidencePanel({ eventId, onClose }: Props) {
     eventLineage(eventId).then(setData).catch((e) => setErr(e.message));
   }, [eventId]);
 
+  // Escape closes the drill-down — always leave a way out of a modal.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
-      <div className="w-full max-w-3xl mt-10 rounded-lg border border-slate-700 bg-slate-950 shadow-2xl">
+    <div
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Evidence lineage"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 18, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-3xl mt-10 rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl"
+      >
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           <div>
             <div className="text-xs text-slate-500 uppercase tracking-wider">Evidence lineage</div>
             <div className="text-sm text-slate-400 mt-0.5">event {eventId.slice(0, 8)}…</div>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white text-xl">✕</button>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="w-8 h-8 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition flex items-center justify-center cursor-pointer"
+          >
+            <XIcon size={18} />
+          </button>
         </div>
         <div className="p-4 max-h-[75vh] overflow-y-auto">
           {err && <div className="text-sm text-red-400">{err}</div>}
-          {!data && !err && <div className="text-sm text-slate-500">Loading…</div>}
+          {!data && !err && <BallLoader label="Tracing evidence…" />}
           {data && (
             <div className="space-y-6">
               <section>
@@ -75,8 +116,8 @@ export default function EvidencePanel({ eventId, onClose }: Props) {
                             </span>
                           )}
                           {r.node_hint && (
-                            <span className="px-1.5 py-0.5 rounded bg-slate-800">
-                              📍 {r.node_hint}
+                            <span className="px-1.5 py-0.5 rounded bg-slate-800 inline-flex items-center gap-1">
+                              <MapPinIcon size={11} /> {r.node_hint}
                             </span>
                           )}
                           <span className="ml-auto">{r.created_at?.slice(11, 19)}</span>
@@ -101,7 +142,7 @@ export default function EvidencePanel({ eventId, onClose }: Props) {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -123,18 +164,18 @@ const ACTION_LABEL: Record<string, string> = {
   rendered: 'Message rendered',
 };
 
-const ACTION_ICON: Record<string, string> = {
-  report_ingested: '📨',
-  event_created: '✨',
-  event_updated: '🔄',
-  gate_decision: '⚖️',
-  auth_requested: '🔐',
-  auth_approved: '✓',
-  auth_denied: '✕',
-  dispatched: '🚀',
-  resolved: '✅',
-  notified: '💬',
-  rendered: '📝',
+const ACTION_ICON: Record<string, React.ReactNode> = {
+  report_ingested: <ChatIcon size={14} className="text-sky-300" />,
+  event_created: <ZapIcon size={14} className="text-gold-400" />,
+  event_updated: <RadarIcon size={14} className="text-slate-400" />,
+  gate_decision: <ShieldIcon size={14} className="text-slate-300" />,
+  auth_requested: <LockIcon size={14} className="text-amber-300" />,
+  auth_approved: <CheckIcon size={14} className="text-emerald-300" />,
+  auth_denied: <XIcon size={14} className="text-red-300" />,
+  dispatched: <SendIcon size={14} className="text-sky-300" />,
+  resolved: <CheckIcon size={14} className="text-emerald-400" />,
+  notified: <ChatIcon size={14} className="text-emerald-300" />,
+  rendered: <GlobeIcon size={14} className="text-slate-300" />,
 };
 
 function summarize(action: string, payload: Record<string, any>): string {
@@ -180,8 +221,10 @@ function LedgerTimeline({ ledger }: { ledger: EventLineage['ledger'] }) {
               key={le.id}
               className="p-2.5 rounded bg-slate-900/60 border border-slate-800 text-sm"
             >
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <span>{ACTION_ICON[le.action] || '•'}</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-flex w-5 h-5 items-center justify-center rounded-md bg-slate-800/80 shrink-0">
+                  {ACTION_ICON[le.action] || <span className="text-slate-500">•</span>}
+                </span>
                 <span className="font-medium text-slate-200">
                   {ACTION_LABEL[le.action] || le.action}
                 </span>

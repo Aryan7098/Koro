@@ -6,6 +6,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import StaffLogin from '../../components/StaffLogin';
 import StadiumMap from '../../components/StadiumMap';
 import EvidencePanel from '../../components/EvidencePanel';
+import PageBackdrop from '../../components/PageBackdrop';
+import RoleHeader from '../../components/RoleHeader';
+import BallLoader from '../../components/BallLoader';
+import {
+  ArrowLeftIcon,
+  ChartIcon,
+  ChatIcon,
+  CheckIcon,
+  ClockIcon,
+  LockIcon,
+  MapPinIcon,
+  ShieldCheckIcon,
+  XIcon,
+  ZapIcon,
+} from '../../components/icons';
 import {
   Me,
   OrganizerLive,
@@ -59,8 +74,11 @@ export default function OrganizerPage() {
 
   if (!me) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
-        <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400">← back</Link>
+      <main className="min-h-screen p-6">
+        <PageBackdrop accent="purple" />
+        <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-emerald-300 transition">
+          <ArrowLeftIcon size={14} /> matchday home
+        </Link>
         <StaffLogin onLogin={setMe} role="organizer" />
       </main>
     );
@@ -69,48 +87,43 @@ export default function OrganizerPage() {
   const nodesById = new Map((live?.nodes || []).map((n) => [n.id, n]));
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-6 max-w-6xl mx-auto">
-      <header className="flex items-center justify-between mb-6">
-        <div>
-          <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400 transition">
-            ← back
-          </Link>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-300 to-fuchsia-400 bg-clip-text text-transparent">
-            Organizer
-          </h1>
-          <div className="text-xs text-slate-500 mt-0.5">
-            {me.display_name} · MetLife Stadium · live
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Link
-            href="/control"
-            className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-emerald-500 transition"
-          >
-            Operations panel
-          </Link>
-          <button
-            onClick={() => { logout(); setMe(null); }}
-            className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-slate-500"
-          >
-            Sign out
-          </button>
-        </div>
-      </header>
+    <main className="min-h-screen p-4 sm:p-6 max-w-6xl mx-auto">
+      <PageBackdrop accent="purple" />
+      <RoleHeader
+        title="Organizer"
+        gradient="from-purple-300 to-fuchsia-400"
+        subtitle={`${me.display_name} · MetLife Stadium · live`}
+        right={
+          <>
+            <Link
+              href="/control"
+              className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-emerald-500 transition"
+            >
+              Operations panel
+            </Link>
+            <button
+              onClick={() => { logout(); setMe(null); }}
+              className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-slate-500 transition cursor-pointer"
+            >
+              Sign out
+            </button>
+          </>
+        }
+      />
 
       <section className="mb-6">
         {metrics && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <MetricTile label="Events (6h)" value={metrics.events_seen} icon="📊" />
-            <MetricTile label="Open now" value={metrics.events_open} tone="warn" icon="⚡" />
+            <MetricTile label="Events (6h)" value={metrics.events_seen} icon={<ChartIcon size={16} />} />
+            <MetricTile label="Open now" value={metrics.events_open} tone="warn" icon={<ZapIcon size={16} />} />
             <MetricTile
               label="Pending auth"
               value={metrics.pending_authorizations}
               tone={metrics.pending_authorizations > 0 ? 'critical' : 'default'}
-              icon="🔐"
+              icon={<LockIcon size={16} />}
               pulse={metrics.pending_authorizations > 0}
             />
-            <MetricTile label="Resolved" value={metrics.events_resolved} tone="ok" icon="✓" />
+            <MetricTile label="Resolved" value={metrics.events_resolved} tone="ok" icon={<CheckIcon size={16} />} />
             <MetricTile
               label="Avg. time-to-confirmed"
               value={
@@ -118,20 +131,20 @@ export default function OrganizerPage() {
                   ? `${Math.round(metrics.avg_time_to_confirmed_seconds)}s`
                   : '—'
               }
-              icon="⏱"
+              icon={<ClockIcon size={16} />}
             />
             <MetricTile
               label="Loop closures sent"
               value={metrics.loop_closure_notifications}
-              icon="💬"
+              icon={<ChatIcon size={16} />}
             />
             <MetricTile
               label="Manipulation suppressed"
               value={metrics.manipulation_suppressed}
               tone="ok"
-              icon="🛡"
+              icon={<ShieldCheckIcon size={16} />}
             />
-            <MetricTile label="Dismissed" value={metrics.events_dismissed} icon="✕" />
+            <MetricTile label="Dismissed" value={metrics.events_dismissed} icon={<XIcon size={16} />} />
           </div>
         )}
       </section>
@@ -142,7 +155,7 @@ export default function OrganizerPage() {
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
         </div>
         {live && <StadiumMap data={live} onSelect={setDrilling} />}
-        {!live && <div className="text-sm text-slate-500">Loading…</div>}
+        {!live && <BallLoader label="Loading venue…" />}
 
         {/* Below the map: readable event list */}
         {live && live.events.length > 0 && (
@@ -166,8 +179,9 @@ export default function OrganizerPage() {
                       {e.distinct_observers.toLocaleString()} reporter(s)
                     </span>
                   </div>
-                  <div className="text-sm text-slate-200">
-                    📍 {nodesById.get(e.node_id)?.name || e.node_id}
+                  <div className="text-sm text-slate-200 flex items-center gap-1.5">
+                    <MapPinIcon size={14} className="text-purple-300/80 shrink-0" />
+                    {nodesById.get(e.node_id)?.name || e.node_id}
                   </div>
                   <div className="text-xs text-slate-400 mt-1 line-clamp-2">
                     {e.canonical_summary || <i>no summary yet</i>}
@@ -235,23 +249,23 @@ function MetricTile({
   label: string;
   value: number | string;
   tone?: 'default' | 'ok' | 'warn' | 'critical';
-  icon?: string;
+  icon?: React.ReactNode;
   pulse?: boolean;
 }) {
-  const border =
+  const style =
     tone === 'critical'
-      ? 'border-red-500/50 shadow-red-500/20'
+      ? { border: 'border-red-500/50 shadow-red-500/20', icon: 'text-red-300' }
       : tone === 'warn'
-        ? 'border-amber-500/50'
+        ? { border: 'border-amber-500/50', icon: 'text-amber-300' }
         : tone === 'ok'
-          ? 'border-emerald-500/50'
-          : 'border-slate-800';
+          ? { border: 'border-emerald-500/50', icon: 'text-emerald-300' }
+          : { border: 'border-slate-800', icon: 'text-slate-400' };
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
-      className={`p-3 rounded-xl border ${border} bg-slate-900/60 shadow-lg relative overflow-hidden`}
+      className={`p-3 rounded-xl border ${style.border} card-glass shadow-lg relative overflow-hidden`}
     >
       {pulse && (
         <motion.div
@@ -261,10 +275,12 @@ function MetricTile({
         />
       )}
       <div className="relative flex items-center gap-2 text-xs text-slate-400">
-        {icon && <span className="text-base">{icon}</span>}
+        {icon && <span className={style.icon}>{icon}</span>}
         {label}
       </div>
-      <div className="relative text-2xl font-semibold mt-1 text-slate-100">{value}</div>
+      <div className="relative font-scoreboard text-3xl tracking-wide mt-1 text-slate-100 tabular-nums">
+        {value}
+      </div>
     </motion.div>
   );
 }

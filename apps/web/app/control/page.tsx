@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import StaffLogin from '../../components/StaffLogin';
+import PageBackdrop from '../../components/PageBackdrop';
+import RoleHeader from '../../components/RoleHeader';
+import { ArrowLeftIcon } from '../../components/icons';
 import {
   Me,
   listScenarios,
@@ -92,8 +95,11 @@ export default function ControlPage() {
 
   if (!me) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
-        <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400">← back</Link>
+      <main className="min-h-screen p-6">
+        <PageBackdrop accent="cyan" />
+        <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-emerald-300 transition">
+          <ArrowLeftIcon size={14} /> matchday home
+        </Link>
         <StaffLogin onLogin={setMe} role="staff" />
       </main>
     );
@@ -102,27 +108,28 @@ export default function ControlPage() {
   const running = status?.running;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-6 max-w-5xl mx-auto">
-      <header className="flex items-center justify-between mb-4">
-        <div>
-          <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400 transition">← back</Link>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-300 to-emerald-400 bg-clip-text text-transparent">
-            Operations Panel
-          </h1>
-          <div className="text-xs text-slate-500 mt-0.5">
+    <main className="min-h-screen p-4 sm:p-6 max-w-5xl mx-auto">
+      <PageBackdrop accent="cyan" />
+      <RoleHeader
+        title="Operations Panel"
+        gradient="from-cyan-300 to-emerald-400"
+        subtitle={
+          <>
             {me.display_name} · training scenarios &amp; live incident injection
-          </div>
-        </div>
-        <button
-          onClick={() => {
-            logout();
-            setMe(null);
-          }}
-          className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-slate-500"
-        >
-          Sign out
-        </button>
-      </header>
+          </>
+        }
+        right={
+          <button
+            onClick={() => {
+              logout();
+              setMe(null);
+            }}
+            className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-slate-500 transition cursor-pointer"
+          >
+            Sign out
+          </button>
+        }
+      />
 
       {flash && (
         <div

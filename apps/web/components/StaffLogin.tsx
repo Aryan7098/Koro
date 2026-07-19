@@ -1,7 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Me, login } from '../lib/api';
+import { ArrowRightIcon, WhistleIcon } from './icons';
+import SoccerBall from './SoccerBall';
 
 const STAFF_USERS = [
   { username: 'staff_ops', display: 'Operations Control', desc: 'Spills · gates · restrooms · wayfinding · crowd', role: 'staff' },
@@ -19,6 +22,7 @@ type Props = {
 };
 
 export default function StaffLogin({ onLogin, role = 'staff' }: Props) {
+  const reduceMotion = useReducedMotion();
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [username, setUsername] = useState('');
@@ -52,40 +56,72 @@ export default function StaffLogin({ onLogin, role = 'staff' }: Props) {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 rounded-2xl border border-slate-700 bg-slate-900/60 backdrop-blur shadow-2xl">
-      <h2 className="text-xl font-semibold mb-1">Operator sign-in</h2>
-      <p className="text-xs text-slate-400 mb-4">
-        Pick your role for this match — or type a specific username.
-      </p>
-      <div className="space-y-2 mb-4">
-        {shown.map((u) => (
-          <button
-            key={u.username}
-            onClick={() => pick(u.username)}
-            disabled={busy === u.username}
-            className="w-full text-left p-3 rounded border border-slate-700 hover:border-slate-500 transition disabled:opacity-50"
-          >
-            <div className="font-medium">{u.display}</div>
-            <div className="text-xs text-slate-500">{u.desc}</div>
-          </button>
-        ))}
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, y: 16, scale: 0.985 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      className="max-w-md mx-auto mt-10 p-6 rounded-2xl card-glass shadow-2xl relative overflow-hidden"
+    >
+      {/* Faint match ball watermark */}
+      <div className="absolute -right-10 -top-10 opacity-[0.06] pointer-events-none">
+        <SoccerBall size={160} surface="#e2e8f0" panel="#334155" />
       </div>
-      <form onSubmit={submitCustom} className="flex gap-2">
-        <input
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="or type a username"
-          className="flex-1 bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm"
-        />
-        <button
-          type="submit"
-          disabled={!!busy}
-          className="px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-sm"
-        >
-          Sign in
-        </button>
-      </form>
-      {err && <div className="mt-3 text-xs text-red-400">{err}</div>}
-    </div>
+
+      <div className="relative">
+        <div className="flex items-center gap-2.5 mb-1">
+          <span className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-center justify-center">
+            <WhistleIcon size={20} />
+          </span>
+          <h2 className="font-scoreboard text-3xl leading-none text-slate-50">Operator sign-in</h2>
+        </div>
+        <p className="text-xs text-slate-400 mb-4 mt-2">
+          Pick your role for this match — or type a specific username.
+        </p>
+        <div className="space-y-2 mb-4">
+          {shown.map((u, i) => (
+            <motion.button
+              key={u.username}
+              initial={reduceMotion ? false : { opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 + i * 0.05, duration: 0.3 }}
+              whileTap={{ scale: 0.985 }}
+              onClick={() => pick(u.username)}
+              disabled={busy === u.username}
+              className="w-full text-left p-3 rounded-xl border border-slate-700 hover:border-emerald-500/70 hover:bg-slate-800/40 transition disabled:opacity-50 group cursor-pointer flex items-center gap-3"
+            >
+              <div className="flex-1">
+                <div className="font-medium text-slate-100">{u.display}</div>
+                <div className="text-xs text-slate-500">{u.desc}</div>
+              </div>
+              <ArrowRightIcon
+                size={16}
+                className="text-slate-600 opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-emerald-300"
+              />
+            </motion.button>
+          ))}
+        </div>
+        <form onSubmit={submitCustom} className="flex gap-2">
+          <input
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="or type a username"
+            aria-label="Username"
+            className="flex-1 bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 transition"
+          />
+          <button
+            type="submit"
+            disabled={!!busy}
+            className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-sm text-white font-medium transition disabled:opacity-50 cursor-pointer"
+          >
+            Sign in
+          </button>
+        </form>
+        {err && (
+          <div role="alert" className="mt-3 text-xs text-red-400">
+            {err}
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 }

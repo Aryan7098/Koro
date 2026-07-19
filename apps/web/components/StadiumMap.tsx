@@ -29,17 +29,8 @@ const NODE_STROKE: Record<string, string> = {
   landmark: '#10b981',
 };
 
-const NODE_ICON: Record<string, string> = {
-  gate: '🚪',
-  restroom: '🚻',
-  medical: '⛑️',
-  section: '💺',
-  concourse: '🏛️',
-  vendor: '🍔',
-  exit: '🚨',
-  transit: '🚌',
-  landmark: '🏳️',
-};
+// Node type is encoded by ring color (see NODE_STROKE) + the hover tooltip;
+// keeping glyphs off the quiet nodes keeps the map readable at a glance.
 
 // Concise short-names so labels fit on the map without overlapping.
 function shortName(name: string): string {
@@ -120,11 +111,33 @@ export default function StadiumMap({ data, onSelect }: Props) {
         <ellipse cx="550" cy="360" rx="415" ry="270" fill="#334155" opacity="0.4" />
         <ellipse cx="550" cy="360" rx="330" ry="210" fill="#475569" opacity="0.45" />
 
-        {/* Field */}
-        <ellipse cx="550" cy="360" rx="230" ry="140" fill="url(#field)" />
-        <ellipse cx="550" cy="360" rx="230" ry="140" fill="none" stroke="#22c55e" strokeOpacity="0.35" strokeWidth="1.5" strokeDasharray="4 4" />
-        <line x1="550" y1="220" x2="550" y2="500" stroke="#22c55e" strokeOpacity="0.5" strokeWidth="1.2" />
-        <circle cx="550" cy="360" r="36" fill="none" stroke="#22c55e" strokeOpacity="0.5" strokeWidth="1.2" />
+        {/* The pitch — a proper rectangle with World Cup markings */}
+        <g>
+          <rect x="345" y="245" width="410" height="230" rx="6" fill="url(#field)" />
+          {/* Mow stripes */}
+          {[0, 1, 2, 3, 4].map((i) => (
+            <rect
+              key={i}
+              x={345 + i * 82}
+              y="245"
+              width="41"
+              height="230"
+              fill="#22c55e"
+              opacity="0.05"
+            />
+          ))}
+          <g stroke="#4ade80" strokeOpacity="0.55" strokeWidth="1.4" fill="none">
+            <rect x="357" y="257" width="386" height="206" />
+            <line x1="550" y1="257" x2="550" y2="463" />
+            <circle cx="550" cy="360" r="30" />
+            <circle cx="550" cy="360" r="1.8" fill="#4ade80" stroke="none" />
+            {/* Penalty boxes */}
+            <rect x="357" y="308" width="56" height="104" />
+            <rect x="687" y="308" width="56" height="104" />
+            <rect x="357" y="336" width="20" height="48" />
+            <rect x="723" y="336" width="20" height="48" />
+          </g>
+        </g>
 
         <ellipse cx="550" cy="360" rx="500" ry="330" fill="url(#bowl)" pointerEvents="none" />
 
@@ -154,15 +167,6 @@ export default function StadiumMap({ data, onSelect }: Props) {
                 strokeWidth={1.2}
                 fillOpacity={0.7}
               />
-              <text
-                x={n.x + 8}
-                y={n.y + 4}
-                fontSize="11"
-                fill="#475569"
-                pointerEvents="none"
-              >
-                {NODE_ICON[n.type] || ''}
-              </text>
             </g>
           );
         })}
@@ -243,7 +247,7 @@ export default function StadiumMap({ data, onSelect }: Props) {
                   fill="#e2e8f0"
                   fontWeight="600"
                 >
-                  {NODE_ICON[n.type] || ''} {label}
+                  {label}
                 </text>
               </g>
             </g>
