@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import StaffLogin from '../../components/StaffLogin';
 import EvidencePanel from '../../components/EvidencePanel';
+import Confetti from '../../components/Confetti';
 import {
   EventLineage,
   Me,
@@ -61,6 +62,7 @@ export default function StaffPage() {
   const [flash, setFlash] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
   const [nodes, setNodes] = useState<VenueNode[]>([]);
   const [lineageCache, setLineageCache] = useState<Record<string, EventLineage>>({});
+  const [confettiTrigger, setConfettiTrigger] = useState<number>(0);
 
   const nodesById = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
 
@@ -128,7 +130,8 @@ export default function StaffPage() {
     const reason = window.prompt('Resolution note (optional):', 'complete');
     try {
       await resolveEvent(eventId, reason || undefined);
-      setFlash({ kind: 'ok', msg: 'Resolved — reporters notified in their languages.' });
+      setFlash({ kind: 'ok', msg: '✓ Resolved — reporters notified in their languages.' });
+      setConfettiTrigger(Date.now());
       refresh();
     } catch (e: any) { setFlash({ kind: 'err', msg: e.message }); }
   }
@@ -254,6 +257,7 @@ export default function StaffPage() {
       )}
 
       {drilling && <EvidencePanel eventId={drilling} onClose={() => setDrilling(null)} />}
+      <Confetti trigger={confettiTrigger || null} />
     </main>
   );
 }

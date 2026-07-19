@@ -92,10 +92,8 @@ export default function ControlPage() {
 
   if (!me) {
     return (
-      <main className="min-h-screen p-6">
-        <Link href="/" className="text-xs text-slate-500 hover:text-slate-300">
-          ← back
-        </Link>
+      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
+        <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400">← back</Link>
         <StaffLogin onLogin={setMe} role="staff" />
       </main>
     );
@@ -104,15 +102,15 @@ export default function ControlPage() {
   const running = status?.running;
 
   return (
-    <main className="min-h-screen p-4 sm:p-6 max-w-5xl mx-auto">
+    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-6 max-w-5xl mx-auto">
       <header className="flex items-center justify-between mb-4">
         <div>
-          <Link href="/" className="text-xs text-slate-500 hover:text-slate-300">
-            ← back
-          </Link>
-          <h1 className="text-2xl font-bold">Control (Simulator)</h1>
+          <Link href="/" className="text-xs text-slate-500 hover:text-emerald-400 transition">← back</Link>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-300 to-emerald-400 bg-clip-text text-transparent">
+            Operations Panel
+          </h1>
           <div className="text-xs text-slate-500 mt-0.5">
-            {me.display_name} · drive scenarios for the judge demo
+            {me.display_name} · training scenarios &amp; live incident injection
           </div>
         </div>
         <button
@@ -137,7 +135,7 @@ export default function ControlPage() {
       )}
 
       <section className="mb-6">
-        <div className="text-xs text-slate-500 uppercase tracking-wider mb-2">Scenarios</div>
+        <div className="text-xs text-slate-500 uppercase tracking-wider mb-2">Training scenarios</div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {scenarios.map((s) => (
             <div key={s.name} className="p-4 rounded border border-slate-800 bg-slate-900/40">

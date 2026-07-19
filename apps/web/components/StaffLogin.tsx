@@ -3,15 +3,14 @@
 import { useState } from 'react';
 import { Me, login } from '../lib/api';
 
-// Seeded operational personas.
 const STAFF_USERS = [
-  { username: 'staff_ops', display: 'Ops Control', desc: 'spills, gates, restrooms, wayfinding, crowd', role: 'staff' },
-  { username: 'staff_medical', display: 'Medical Supervisor', desc: 'medical only', role: 'staff' },
-  { username: 'staff_security', display: 'Security Lead', desc: 'security, structural', role: 'staff' },
-  { username: 'organizer', display: 'Match Organizer', desc: 'observes all categories', role: 'organizer' },
-  { username: 'vol_north', display: 'Priya (Volunteer)', desc: 'zone: north 100', role: 'volunteer' },
-  { username: 'vol_south', display: 'Diego (Volunteer)', desc: 'zone: south 100', role: 'volunteer' },
-  { username: 'vol_mezz', display: 'Aisha (Volunteer)', desc: 'zone: mezzanine 200', role: 'volunteer' },
+  { username: 'staff_ops', display: 'Operations Control', desc: 'Spills · gates · restrooms · wayfinding · crowd', role: 'staff' },
+  { username: 'staff_medical', display: 'Medical Supervisor', desc: 'Medical dispatch and coordination', role: 'staff' },
+  { username: 'staff_security', display: 'Security Lead', desc: 'Security · structural · evacuation', role: 'staff' },
+  { username: 'organizer', display: 'Match Organizer', desc: 'Cross-category oversight and analytics', role: 'organizer' },
+  { username: 'vol_north', display: 'Priya · North 100 volunteer', desc: 'Zone North · sections 100s', role: 'volunteer' },
+  { username: 'vol_south', display: 'Diego · South 100 volunteer', desc: 'Zone South · sections 100s', role: 'volunteer' },
+  { username: 'vol_mezz', display: 'Aisha · Mezzanine volunteer', desc: 'Zone Mezzanine · sections 200s', role: 'volunteer' },
 ];
 
 type Props = {
@@ -53,10 +52,10 @@ export default function StaffLogin({ onLogin, role = 'staff' }: Props) {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 rounded-lg border border-slate-700 bg-slate-900/40">
-      <h2 className="text-lg font-semibold mb-1">Sign in</h2>
-      <p className="text-xs text-slate-500 mb-4">
-        Hackathon shortcut — no passwords. Pick a seeded user or type a username.
+    <div className="max-w-md mx-auto mt-10 p-6 rounded-2xl border border-slate-700 bg-slate-900/60 backdrop-blur shadow-2xl">
+      <h2 className="text-xl font-semibold mb-1">Operator sign-in</h2>
+      <p className="text-xs text-slate-400 mb-4">
+        Pick your role for this match — or type a specific username.
       </p>
       <div className="space-y-2 mb-4">
         {shown.map((u) => (

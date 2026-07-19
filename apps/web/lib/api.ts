@@ -167,6 +167,18 @@ export async function venueGraph(): Promise<{ nodes: VenueNode[]; edges: any[] }
   return req('/venue/graph');
 }
 
+export type PublicStats = {
+  reports_seen_24h: number;
+  events_seen_24h: number;
+  events_resolved_24h: number;
+  events_open_now: number;
+  languages_seen_24h: number;
+};
+
+export async function publicStats(): Promise<PublicStats> {
+  return req('/venue/stats');
+}
+
 export async function planRoute(params: {
   from_id: string;
   category?: string;

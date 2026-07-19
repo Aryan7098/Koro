@@ -19,6 +19,58 @@ from app.rendering.pathplan import plan_reroute
 router = APIRouter(prefix="/venue", tags=["state:venue"])
 
 
+@router.get("/stats")
+async def public_stats(session: Annotated[AsyncSession, Depends(get_session)]) -> dict:
+    """Small unauthenticated live-stats endpoint powering the landing-page
+    ticker. Aggregates totals over the last 24h so the numbers feel busy
+    even if the venue isn't currently active."""
+    from datetime import UTC, datetime, timedelta
+
+    from sqlalchemy import func
+
+    since = datetime.now(UTC) - timedelta(hours=24)
+    reports_seen = (
+        await session.execute(
+            select(func.count()).select_from(Report).where(Report.created_at >= since)
+        )
+    ).scalar_one()
+    events_seen = (
+        await session.execute(
+            select(func.count()).select_from(CanonicalEvent).where(
+                CanonicalEvent.first_seen >= since
+            )
+        )
+    ).scalar_one()
+    resolved = (
+        await session.execute(
+            select(func.count()).select_from(CanonicalEvent).where(
+                CanonicalEvent.resolved_at >= since
+            )
+        )
+    ).scalar_one()
+    open_now = (
+        await session.execute(
+            select(func.count()).select_from(CanonicalEvent).where(
+                CanonicalEvent.status.in_(["open", "dispatched", "pending_auth"])
+            )
+        )
+    ).scalar_one()
+    languages = (
+        await session.execute(
+            select(func.count(func.distinct(Report.raw_language))).where(
+                Report.created_at >= since
+            )
+        )
+    ).scalar_one() or 0
+    return {
+        "reports_seen_24h": int(reports_seen),
+        "events_seen_24h": int(events_seen),
+        "events_resolved_24h": int(resolved),
+        "events_open_now": int(open_now),
+        "languages_seen_24h": int(languages),
+    }
+
+
 @router.get("/plan")
 async def plan_route(
     session: Annotated[AsyncSession, Depends(get_session)],

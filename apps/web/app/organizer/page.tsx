@@ -87,7 +87,7 @@ export default function OrganizerPage() {
             href="/control"
             className="text-xs px-3 py-1.5 rounded-full border border-slate-700 hover:border-emerald-500 transition"
           >
-            control panel
+            Operations panel
           </Link>
           <button
             onClick={() => { logout(); setMe(null); }}
